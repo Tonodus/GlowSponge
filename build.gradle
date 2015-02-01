@@ -52,12 +52,12 @@ def getVersionName() {
 // Basic project information
 group = 'net.glowstone'
 version = '0.0.1-SNAPSHOT'
-description = "Glowstone"
-mainClassName = "net.glowstone.GlowServer"
+description = "GlowSponge"
+mainClassName = "net.glowstone.Boot"
 
 // Extended project information
-ext.url = 'https://github.com/GlowstoneMC/Glowstone'
-ext.bukkitVersion = '1.8-R1-SNAPSHOT'
+ext.url = 'https://github.com/Tonodus/GlowSponge'
+ext.spongeVersion = '2.1-SNAPSHOT'
 ext.gitDescribe = getVersionName()
 ext.lombok = 'org.projectlombok:lombok:1.14.8'
 
@@ -93,12 +93,13 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/public/" }
-    maven { url "http://repo.glowstone.net/content/groups/public/" }
+    maven { url "http://repo.spongepowered.org/maven/" }
 }
 
 // Dependencies used by our project
 dependencies {
-    compile group: 'net.glowstone', name: 'glowkit', version: project.ext.bukkitVersion
+    compile group: 'org.spongepowered', name: 'spongeapi', version: project.ext.spongeVersion
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
     compile 'com.flowpowered:flow-networking:1.0.0-SNAPSHOT'
     compile 'jline:jline:2.11'
     //compile 'mysql:mysql-connector-java:5.1.14'
@@ -129,7 +130,7 @@ remap {
 // Eclipse project name
 eclipse {
     project {
-        name = 'Glowstone'
+        name = 'GlowSponge'
     }
 }
 
@@ -138,9 +139,6 @@ jar.manifest.mainAttributes(
         'Main-Class': mainClassName,
         'Implementation-Title': description,
         'Implementation-Version': ext.gitDescribe,
-        'Implementation-Vendor': 'Glowstone Project',
-        'Specification-Title': 'Bukkit/Glowkit',
-        'Specification-Version': ext.bukkitVersion,
-        'Specification-Vendor': 'Glowstone Project',
+        'Specification-Version': ext.spongeVersion,
         'Sealed': true
 )

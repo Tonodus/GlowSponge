@@ -14,25 +14,19 @@ import net.glowstone.net.message.play.entity.EntityStatusMessage;
 import net.glowstone.net.message.play.player.ServerDifficultyMessage;
 import net.glowstone.util.BlockStateDelegate;
 import net.glowstone.util.GameRuleManager;
-import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.entity.*;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
-import org.bukkit.event.world.*;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
-import org.bukkit.metadata.MetadataStore;
-import org.bukkit.metadata.MetadataStoreBase;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
-import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,22 +37,7 @@ import java.util.logging.Level;
  * A class which represents the in-game world.
  * @author Graham Edgecombe
  */
-public final class GlowWorld implements World {
-
-    /**
-     * The metadata store class for worlds.
-     */
-    private static final class WorldMetadataStore extends MetadataStoreBase<World> implements MetadataStore<World> {
-        @Override
-        protected String disambiguate(World subject, String metadataKey) {
-            return subject.getName() + ":" + metadataKey;
-        }
-    }
-
-    /**
-     * The metadata store for world objects.
-     */
-    private static final MetadataStore<World> metadata = new WorldMetadataStore();
+public final class GlowWorld implements org.spongepowered.api.world.World {
 
     /**
      * The length in ticks of one Minecraft day.
@@ -119,16 +98,6 @@ public final class GlowWorld implements World {
      * The game rules used in this world.
      */
     private final GameRuleManager gameRules = new GameRuleManager();
-
-    /**
-     * The environment.
-     */
-    private final Environment environment;
-
-    /**
-     * The world type.
-     */
-    private final WorldType worldType;
 
     /**
      * Whether structure generation is enabled.
@@ -377,7 +346,7 @@ public final class GlowWorld implements World {
         // moved. unfortunately pretty hacky. not a problem for players b/c
         // their position is modified by session ticking.
         for (GlowEntity entity : temp) {
-            if (entity instanceof GlowPlayer) {
+            if (entity instanceof net.glowstone.senity.GlowPlayer) {
                 players.add(entity);
             } else {
                 entity.pulse();
@@ -399,7 +368,7 @@ public final class GlowWorld implements World {
         }
         if (worldAge % (30 * 20) == 0) {
             // Only send the time every so often; clients are smart.
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.sendTime();
             }
         }
@@ -466,8 +435,8 @@ public final class GlowWorld implements World {
         return entities;
     }
 
-    public Collection<GlowPlayer> getRawPlayers() {
-        return entities.getAll(GlowPlayer.class);
+    public Collection<net.glowstone.senity.GlowPlayer> getRawPlayers() {
+        return entities.getAll(net.glowstone.senity.GlowPlayer.class);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -475,7 +444,7 @@ public final class GlowWorld implements World {
 
     @Override
     public List<Player> getPlayers() {
-        return new ArrayList<Player>(entities.getAll(GlowPlayer.class));
+        return new ArrayList<Player>(entities.getAll(net.glowstone.senity.GlowPlayer.class));
     }
 
     @Override
@@ -598,7 +567,7 @@ public final class GlowWorld implements World {
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
         ServerDifficultyMessage message = new ServerDifficultyMessage(difficulty.getValue());
-        for (GlowPlayer player : getRawPlayers()) {
+        for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
             player.getSession().send(message);
         }
     }
@@ -750,7 +719,7 @@ public final class GlowWorld implements World {
         });
 
         // save players
-        for (GlowPlayer player : getRawPlayers()) {
+        for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
             player.saveData(async);
         }
     }
@@ -948,7 +917,7 @@ public final class GlowWorld implements World {
         GlowChunk.Key key = new GlowChunk.Key(x, z);
         boolean result = false;
 
-        for (GlowPlayer player : getRawPlayers()) {
+        for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
             if (player.canSeeChunk(key)) {
                 player.getSession().send(getChunkAt(x, z).toMessage());
                 result = true;
@@ -1103,7 +1072,7 @@ public final class GlowWorld implements World {
     public void setTime(long time) {
         this.time = (time % DAY_LENGTH + DAY_LENGTH) % DAY_LENGTH;
 
-        for (GlowPlayer player : getRawPlayers()) {
+        for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
             player.sendTime();
         }
     }
@@ -1147,7 +1116,7 @@ public final class GlowWorld implements World {
 
         // update players
         if (previouslyRaining != currentlyRaining) {
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.sendWeather();
             }
         }
@@ -1214,13 +1183,13 @@ public final class GlowWorld implements World {
         currentSkyDarkness = Math.max(0, Math.min(1, previousSkyDarkness + skyDarknessModifier));
 
         if (previousRainDensity != currentRainDensity) {
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.sendRainDensity();
             }
         }
 
         if (previousSkyDarkness != currentSkyDarkness) {
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.sendSkyDarkness();
             }
         }
@@ -1427,13 +1396,13 @@ public final class GlowWorld implements World {
         }
         if (rule.equals("doDaylightCycle")) {
             // inform clients about the daylight cycle change
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.sendTime();
             }
         } else if (rule.equals("reducedDebugInfo")) {
             // inform clients about the debug info change
             EntityStatusMessage message = new EntityStatusMessage(0, gameRules.getBoolean("reducedDebugInfo") ? EntityStatusMessage.ENABLE_REDUCED_DEBUG_INFO : EntityStatusMessage.DISABLE_REDUCED_DEBUG_INFO);
-            for (GlowPlayer player : getRawPlayers()) {
+            for (net.glowstone.senity.GlowPlayer player : getRawPlayers()) {
                 player.getSession().send(message);
             }
         }

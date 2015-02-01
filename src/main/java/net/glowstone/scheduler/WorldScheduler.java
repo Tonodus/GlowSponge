@@ -1,5 +1,6 @@
 package net.glowstone.scheduler;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import net.glowstone.GlowServer;
 import net.glowstone.GlowWorld;

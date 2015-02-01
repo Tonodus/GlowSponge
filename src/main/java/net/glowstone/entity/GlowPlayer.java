@@ -1,9 +1,16 @@
 package net.glowstone.entity;
 
+import com.flowpowered.math.vector.Vector3d;
+import com.flowpowered.math.vector.Vector3f;
 import com.flowpowered.networking.Message;
+import com.google.common.base.*;
+import com.google.common.base.Optional;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.glowstone.*;
+import net.glowstone.ChunkManager;
+import net.glowstone.GlowChunk;
+import net.glowstone.GlowOfflinePlayer;
+import net.glowstone.GlowWorld;
 import net.glowstone.block.entity.TileEntity;
 import net.glowstone.constants.*;
 import net.glowstone.entity.meta.ClientSettings;
@@ -28,14 +35,12 @@ import net.glowstone.util.StatisticMap;
 import net.glowstone.util.TextMessage;
 import net.glowstone.util.nbt.CompoundTag;
 import org.apache.commons.lang.Validate;
-import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -46,19 +51,36 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.StandardMessenger;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.BlockVector;
-import org.bukkit.util.Vector;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.sound.SoundType;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntitySnapshot;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.entity.player.gamemode.GameMode;
+import org.spongepowered.api.entity.projectile.Projectile;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.net.PlayerConnection;
+import org.spongepowered.api.potion.PotionEffect;
+import org.spongepowered.api.potion.PotionEffectType;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.context.Context;
+import org.spongepowered.api.service.persistence.DataSource;
+import org.spongepowered.api.service.persistence.data.DataContainer;
+import org.spongepowered.api.text.chat.ChatType;
+import org.spongepowered.api.text.title.Title;
+import org.spongepowered.api.util.RelativePositions;
+import org.spongepowered.api.util.Tristate;
+import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.world.Location;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 
-/**
- * Represents an in-game player.
- * @author Graham Edgecombe
- */
-@DelegateDeserialization(GlowOfflinePlayer.class)
-public final class GlowPlayer extends GlowHumanEntity implements Player {
+public final class GlowPlayer extends GlowHumanEntity implements org.spongepowered.api.entity.player.Player {
 
     /**
      * A static entity id to use when telling the client about itself.
@@ -363,6 +385,66 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
         return joinTime;
     }
 
+    @Override
+    public boolean setLocation(Location location) {
+        return false;
+    }
+
+    @Override
+    public boolean setLocationAndRotation(Location location, Vector3f rotation, EnumSet<RelativePositions> relativePositions) {
+        return false;
+    }
+
+    @Override
+    public Vector3f getRotation() {
+        return null;
+    }
+
+    @Override
+    public void setRotation(Vector3f rotation) {
+
+    }
+
+    @Override
+    public Entity getBaseVehicle() {
+        return null;
+    }
+
+    @Override
+    public boolean setPassenger(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean setVehicle(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public float getBase() {
+        return 0;
+    }
+
+    @Override
+    public float getHeight() {
+        return 0;
+    }
+
+    @Override
+    public float getScale() {
+        return 0;
+    }
+
+    @Override
+    public boolean isRemoved() {
+        return false;
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return false;
+    }
+
     /**
      * Destroys this entity by removing it from the world and marking it as not
      * being active.
@@ -377,6 +459,21 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
         permissions.clearPermissions();
         getServer().setPlayerOnline(this, false);
         super.remove();
+    }
+
+    @Override
+    public int getFireDelay() {
+        return 0;
+    }
+
+    @Override
+    public boolean isPersistent() {
+        return false;
+    }
+
+    @Override
+    public void setPersistent(boolean persistent) {
+
     }
 
     @Override
@@ -760,6 +857,11 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public EntitySnapshot getSnapshot() {
+        return null;
+    }
+
+    @Override
     public InetSocketAddress getAddress() {
         return session.getAddress();
     }
@@ -802,6 +904,11 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     @Override
     public boolean hasPlayedBefore() {
         return hasPlayedBefore;
+    }
+
+    @Override
+    public boolean hasJoinedBefore() {
+        return false;
     }
 
     @Override
@@ -914,6 +1021,11 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
         setGameModeDefaults();
     }
 
+    @Override
+    public PlayerConnection getConnection() {
+        return null;
+    }
+
     private void setGameModeDefaults() {
         GameMode mode = getGameMode();
         setAllowFlight(mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR);
@@ -957,6 +1069,46 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public int getMaxAir() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxAir(int air) {
+
+    }
+
+    @Override
+    public int getInvulnerabilityTicks() {
+        return 0;
+    }
+
+    @Override
+    public void setInvulnerabilityTicks(int ticks) {
+
+    }
+
+    @Override
+    public int getMaxInvulnerabilityTicks() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxInvulnerabilityTicks(int ticks) {
+
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return false;
+    }
+
+    @Override
+    public void setInvisible(boolean invisible) {
+
+    }
+
+    @Override
     public double getEyeHeight(boolean ignoreSneaking) {
         // Height of player's eyes above feet. Matches CraftBukkit.
         if (ignoreSneaking || !isSneaking()) {
@@ -979,6 +1131,46 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
         canFly = flight;
         if (!canFly) flying = false;
         sendAbilities();
+    }
+
+    @Override
+    public Locale getLocale() {
+        return null;
+    }
+
+    @Override
+    public void sendMessage(ChatType type, String... message) {
+
+    }
+
+    @Override
+    public void sendMessage(ChatType type, org.spongepowered.api.text.message.Message... messages) {
+
+    }
+
+    @Override
+    public void sendMessage(ChatType type, Iterable<org.spongepowered.api.text.message.Message> messages) {
+
+    }
+
+    @Override
+    public void sendTitle(Title title) {
+
+    }
+
+    @Override
+    public void resetTitle() {
+
+    }
+
+    @Override
+    public void clearTitle() {
+
+    }
+
+    @Override
+    public void setGameMode(GameMode gameMode) {
+
     }
 
     @Override
@@ -1030,9 +1222,29 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public double getTotalExperinece() {
+        return 0;
+    }
+
+    @Override
+    public void setExperience(double experience) {
+
+    }
+
+    @Override
     public void setLevel(int level) {
         this.level = Math.max(level, 0);
         sendExperience();
+    }
+
+    @Override
+    public void setTotalExperience(double totalExperience) {
+
+    }
+
+    @Override
+    public boolean isViewingInventory() {
+        return false;
     }
 
     @Override
@@ -1107,6 +1319,41 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public void addPotionEffect(PotionEffect potionEffect, boolean force) {
+
+    }
+
+    @Override
+    public void addPotionEffects(Collection<PotionEffect> potionEffects, boolean force) {
+
+    }
+
+    @Override
+    public void removePotionEffect(PotionEffectType potionEffectType) {
+
+    }
+
+    @Override
+    public boolean hasPotionEffect(PotionEffectType potionEffectType) {
+        return false;
+    }
+
+    @Override
+    public List<PotionEffect> getPotionEffects() {
+        return null;
+    }
+
+    @Override
+    public Optional<Living> getLastAttacker() {
+        return null;
+    }
+
+    @Override
+    public void setLastAttacker(Living lastAttacker) {
+
+    }
+
+    @Override
     public boolean isHealthScaled() {
         return healthScaled;
     }
@@ -1151,6 +1398,16 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public float getHunger() {
+        return 0;
+    }
+
+    @Override
+    public void setHunger(float hunger) {
+
+    }
+
+    @Override
     public float getSaturation() {
         return saturation;
     }
@@ -1159,6 +1416,11 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     public void setSaturation(float value) {
         saturation = value;
         sendHealth();
+    }
+
+    @Override
+    public double getExperience() {
+        return 0;
     }
 
     private void sendHealth() {
@@ -1261,13 +1523,23 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
     }
 
     @Override
+    public void sendMessage(org.spongepowered.api.text.message.Message... messages) {
+
+    }
+
+    @Override
+    public void sendMessage(Iterable<org.spongepowered.api.text.message.Message> messages) {
+
+    }
+
+    @Override
     public void sendRawMessage(String message) {
         // old-style formatting to json conversion is in TextMessage
         session.send(new ChatMessage(message));
     }
 
     @Override
-    public void kickPlayer(String message) {
+    public void kickPlayer(org.spongepowered.api.text.message.Message message) {
         session.disconnect(message == null ? "" : message);
     }
 
@@ -1914,5 +2186,160 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
             }
             session.send(new PluginMessage("REGISTER", buf.array()));
         }
+    }
+
+    @Override
+    public DataContainer toContainer() {
+        return null;
+    }
+
+    @Override
+    public void serialize(DataSource source) {
+
+    }
+
+    @Override
+    public Optional<ItemStack> getHelmet() {
+        return null;
+    }
+
+    @Override
+    public void setHelmet(ItemStack helmet) {
+
+    }
+
+    @Override
+    public Optional<ItemStack> getChestplate() {
+        return null;
+    }
+
+    @Override
+    public void setChestplate(ItemStack chestplate) {
+
+    }
+
+    @Override
+    public Optional<ItemStack> getLeggings() {
+        return null;
+    }
+
+    @Override
+    public void setLeggings(ItemStack leggings) {
+
+    }
+
+    @Override
+    public Optional<ItemStack> getBoots() {
+        return null;
+    }
+
+    @Override
+    public void setBoots(ItemStack boots) {
+
+    }
+
+    @Override
+    public void setItemInHand(ItemStack itemInHand) {
+
+    }
+
+    @Override
+    public <T> Optional<T> getData(Class<T> dataClass) {
+        return null;
+    }
+
+    @Override
+    public <T extends Projectile> T launchProjectile(Class<T> projectileClass) {
+        return null;
+    }
+
+    @Override
+    public <T extends Projectile> T launchProjectile(Class<T> projectileClass, Vector3f velocity) {
+        return null;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return null;
+    }
+
+    @Override
+    public Optional<CommandSource> getCommandSource() {
+        return null;
+    }
+
+    @Override
+    public SubjectCollection getContainingCollection() {
+        return null;
+    }
+
+    @Override
+    public SubjectData getData() {
+        return null;
+    }
+
+    @Override
+    public SubjectData getTransientData() {
+        return null;
+    }
+
+    @Override
+    public boolean hasPermission(Set<Context> contexts, String permission) {
+        return false;
+    }
+
+    @Override
+    public Tristate getPermissionValue(Set<Context> contexts, String permission) {
+        return null;
+    }
+
+    @Override
+    public boolean isChildOf(Subject parent) {
+        return false;
+    }
+
+    @Override
+    public boolean isChildOf(Set<Context> contexts, Subject parent) {
+        return false;
+    }
+
+    @Override
+    public List<Subject> getParents() {
+        return null;
+    }
+
+    @Override
+    public List<Subject> getParents(Set<Context> contexts) {
+        return null;
+    }
+
+    @Override
+    public Set<Context> getActiveContexts() {
+        return null;
+    }
+
+    @Override
+    public void spawnParticles(ParticleEffect particleEffect, Vector3d position) {
+
+    }
+
+    @Override
+    public void spawnParticles(ParticleEffect particleEffect, Vector3d position, int radius) {
+
+    }
+
+    @Override
+    public void playSound(SoundType sound, Vector3d position, double volume) {
+
+    }
+
+    @Override
+    public void playSound(SoundType sound, Vector3d position, double volume, double pitch) {
+
+    }
+
+    @Override
+    public void playSound(SoundType sound, Vector3d position, double volume, double pitch, double minVolume) {
+
     }
 }
