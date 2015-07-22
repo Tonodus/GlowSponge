@@ -1,17 +1,16 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class ItemHoe extends ItemType {
+public class ItemHoe extends BaseItemBehavior {
 
     @Override
-    public void rightClickBlock(GlowPlayer player, GlowBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
+    public void rightClickBlock(GlowPlayer player, BukkitBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
         if (target.getRelative(BlockFace.UP).getType() == Material.AIR) {
             if (target.getType() == Material.GRASS || (target.getType() == Material.DIRT && target.getData() == 0)) {
                 // grass or ordinary dirt: become soil

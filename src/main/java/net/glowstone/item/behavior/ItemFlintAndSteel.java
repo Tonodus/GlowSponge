@@ -1,10 +1,9 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
 import net.glowstone.EventFactory;
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockTNT;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.BlockIgniteEvent;
@@ -18,7 +17,7 @@ public class ItemFlintAndSteel extends ItemTool {
     }
 
     @Override
-    public boolean onToolRightClick(GlowPlayer player, ItemStack holding, GlowBlock target, BlockFace face, Vector clickedLoc) {
+    public boolean onToolRightClick(GlowPlayer player, ItemStack holding, BukkitBlock target, BlockFace face, Vector clickedLoc) {
         switch (target.getType()) {
             case TNT:
                 fireTnt(target);
@@ -36,12 +35,12 @@ public class ItemFlintAndSteel extends ItemTool {
         // TODO: check for nether portal and activate it
     }
 
-    private void fireTnt(GlowBlock tnt) {
+    private void fireTnt(BukkitBlock tnt) {
         BlockTNT.igniteBlock(tnt, false);
     }
 
-    private boolean setBlockOnFire(GlowPlayer player, GlowBlock clicked, BlockFace face, ItemStack holding, Vector clickedLoc) {
-        GlowBlock fireBlock = clicked.getRelative(face);
+    private boolean setBlockOnFire(GlowPlayer player, BukkitBlock clicked, BlockFace face, ItemStack holding, Vector clickedLoc) {
+        BukkitBlock fireBlock = clicked.getRelative(face);
         if (fireBlock.getType() != Material.AIR) {
             return true;
         }

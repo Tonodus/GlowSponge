@@ -1,8 +1,7 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.GlowBlockState;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -19,7 +18,7 @@ public class ItemFoodSeeds extends ItemFood {
     }
 
     @Override
-    public void rightClickBlock(GlowPlayer player, GlowBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
+    public void rightClickBlock(GlowPlayer player, BukkitBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
         if (target.getType() == soilType && target.getRelative(BlockFace.UP).getType() == Material.AIR) {
             final GlowBlockState state = target.getRelative(BlockFace.UP).getState();
             state.setType(cropsType);

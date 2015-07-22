@@ -1,27 +1,22 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
 import net.glowstone.EventFactory;
 import net.glowstone.block.GlowBlockState;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockLiquid;
 import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.Iterator;
 
-public class ItemBucket extends ItemType {
-
-    public ItemBucket() {
-        setMaxStackSize(16);
-    }
-
+public class ItemBucket extends BaseItemBehavior {
     @Override
     public void rightClickAir(GlowPlayer player, ItemStack holding) {
         Iterator<Block> itr = new BlockIterator(player, 5);

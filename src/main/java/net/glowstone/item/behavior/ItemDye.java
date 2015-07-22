@@ -1,8 +1,7 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.GlowBlockState;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -16,10 +15,10 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.material.Tree;
 import org.bukkit.util.Vector;
 
-public class ItemDye extends ItemType {
+public class ItemDye extends BaseItemBehavior {
 
     @Override
-    public void rightClickBlock(GlowPlayer player, GlowBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
+    public void rightClickBlock(GlowPlayer player, BukkitBlock target, BlockFace face, ItemStack holding, Vector clickedLoc) {
         MaterialData data = holding.getData();
         if (data instanceof Dye) {
             final Dye dye = (Dye) data;

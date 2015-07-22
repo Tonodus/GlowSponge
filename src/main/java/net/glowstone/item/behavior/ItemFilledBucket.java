@@ -1,11 +1,10 @@
-package net.glowstone.block.itemtype;
+package net.glowstone.item.behavior;
 
 import net.glowstone.EventFactory;
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.GlowBlockState;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -13,7 +12,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public class ItemFilledBucket extends ItemType {
+public class ItemFilledBucket extends BaseItemBehavior {
 
     private final BlockType liquid;
 
@@ -23,8 +22,8 @@ public class ItemFilledBucket extends ItemType {
     }
 
     @Override
-    public void rightClickBlock(GlowPlayer player, GlowBlock against, BlockFace face, ItemStack holding, Vector clickedLoc) {
-        GlowBlock target = against.getRelative(face);
+    public void rightClickBlock(GlowPlayer player, BukkitBlock against, BlockFace face, ItemStack holding, Vector clickedLoc) {
+        BukkitBlock target = against.getRelative(face);
         BlockType againstBlockType = ItemTable.instance().getBlock(against.getType());
 
         // only allow placement inside replaceable blocks
