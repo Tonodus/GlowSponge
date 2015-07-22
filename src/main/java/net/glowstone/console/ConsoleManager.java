@@ -1,27 +1,4 @@
-package net.glowstone;
-
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandException;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.conversations.Conversation;
-import org.bukkit.conversations.ConversationAbandonedEvent;
-import org.bukkit.event.server.ServerCommandEvent;
-import org.bukkit.permissions.PermissibleBase;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.plugin.Plugin;
-import org.fusesource.jansi.Ansi;
-import org.fusesource.jansi.AnsiConsole;
-
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.logging.*;
-import java.util.logging.Formatter;
+package net.glowstone.console;
 
 /**
  * A meta-class to handle all logging and input-related console improvements.
@@ -29,16 +6,14 @@ import java.util.logging.Formatter;
  */
 public final class ConsoleManager {
 
-    private static final String CONSOLE_DATE = "HH:mm:ss";
+ /*   private static final String CONSOLE_DATE = "HH:mm:ss";
     private static final String FILE_DATE = "yyyy/MM/dd HH:mm:ss";
     private static final Logger logger = Logger.getLogger("");
 
     private final GlowServer server;
-    private final Map<ChatColor, String> replacements = new EnumMap<>(ChatColor.class);
-    private final ChatColor[] colors = ChatColor.values();
 
     private ConsoleReader reader;
-    private ConsoleCommandSender sender;
+    private ColoredCommandSender sender;
 
     private boolean running = true;
     private boolean jLine = false;
@@ -69,7 +44,7 @@ public final class ConsoleManager {
         System.setErr(new PrintStream(new LoggerOutputStream(Level.WARNING), true));
 
         // set up colorization replacements
-        replacements.put(ChatColor.BLACK, Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.BLACK).boldOff().toString());
+      /*  replacements.put(ChatColor.BLACK, Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.BLACK).boldOff().toString());
         replacements.put(ChatColor.DARK_BLUE, Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.BLUE).boldOff().toString());
         replacements.put(ChatColor.DARK_GREEN, Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.GREEN).boldOff().toString());
         replacements.put(ChatColor.DARK_AQUA, Ansi.ansi().a(Ansi.Attribute.RESET).fg(Ansi.Color.CYAN).boldOff().toString());
@@ -90,12 +65,9 @@ public final class ConsoleManager {
         replacements.put(ChatColor.STRIKETHROUGH, Ansi.ansi().a(Ansi.Attribute.STRIKETHROUGH_ON).toString());
         replacements.put(ChatColor.UNDERLINE, Ansi.ansi().a(Ansi.Attribute.UNDERLINE).toString());
         replacements.put(ChatColor.ITALIC, Ansi.ansi().a(Ansi.Attribute.ITALIC).toString());
-        replacements.put(ChatColor.RESET, Ansi.ansi().a(Ansi.Attribute.RESET).toString());
-    }
+        replacements.put(ChatColor.RESET, Ansi.ansi().a(Ansi.Attribute.RESET).toString());*/
+    /*}
 
-    public ConsoleCommandSender getSender() {
-        return sender;
-    }
 
     public void startConsole(boolean jLine) {
         this.jLine = jLine;
@@ -129,7 +101,7 @@ public final class ConsoleManager {
         if (string.indexOf(ChatColor.COLOR_CHAR) < 0) {
             return string;  // no colors in the message
         } else if (!jLine || !reader.getTerminal().isAnsiSupported()) {
-            return ChatColor.stripColor(string);  // color not supported
+            return TextUtils.stripColor(string);  // color not supported
         } else {
             // colorize or strip all colors
             for (ChatColor color : colors) {
@@ -201,161 +173,18 @@ public final class ConsoleManager {
 
         @Override
         public void run() {
-            ServerCommandEvent event = EventFactory.callEvent(new ServerCommandEvent(sender, command));
+           // ServerCommandEvent event = EventFactory.callEvent(new ServerCommandEvent(sender, command));
             server.dispatchCommand(sender, event.getCommand());
         }
     }
 
-    private class ColoredCommandSender implements ConsoleCommandSender {
-        private final PermissibleBase perm = new PermissibleBase(this);
+    private class ColoredCommandSender  {
 
-        ////////////////////////////////////////////////////////////////////////
-        // CommandSender
-
-        @Override
-        public String getName() {
-            return "CONSOLE";
-        }
-
-        @Override
-        public void sendMessage(String text) {
-            server.getLogger().info(text);
-        }
-
-        @Override
-        public void sendMessage(String[] strings) {
-            for (String line : strings) {
-                sendMessage(line);
-            }
-        }
-
-        @Override
-        public GlowServer getServer() {
-            return server;
-        }
-
-        @Override
-        public boolean isOp() {
-            return true;
-        }
-
-        @Override
-        public void setOp(boolean value) {
-            throw new UnsupportedOperationException("Cannot change operator status of server console");
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Permissible
-
-        @Override
-        public boolean isPermissionSet(String name) {
-            return perm.isPermissionSet(name);
-        }
-
-        @Override
-        public boolean isPermissionSet(Permission perm) {
-            return this.perm.isPermissionSet(perm);
-        }
-
-        @Override
-        public boolean hasPermission(String name) {
-            return perm.hasPermission(name);
-        }
-
-        @Override
-        public boolean hasPermission(Permission perm) {
-            return this.perm.hasPermission(perm);
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
-            return perm.addAttachment(plugin, name, value);
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin) {
-            return perm.addAttachment(plugin);
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
-            return perm.addAttachment(plugin, name, value, ticks);
-        }
-
-        @Override
-        public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
-            return perm.addAttachment(plugin, ticks);
-        }
-
-        @Override
-        public void removeAttachment(PermissionAttachment attachment) {
-            perm.removeAttachment(attachment);
-        }
-
-        @Override
-        public void recalculatePermissions() {
-            perm.recalculatePermissions();
-        }
-
-        @Override
-        public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-            return perm.getEffectivePermissions();
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Conversable
-
-        @Override
-        public boolean isConversing() {
-            return false;
-        }
-
-        @Override
-        public void acceptConversationInput(String input) {
-
-        }
-
-        @Override
-        public boolean beginConversation(Conversation conversation) {
-            return false;
-        }
-
-        @Override
-        public void abandonConversation(Conversation conversation) {
-
-        }
-
-        @Override
-        public void abandonConversation(Conversation conversation, ConversationAbandonedEvent details) {
-
-        }
-
-        @Override
-        public void sendRawMessage(String message) {
-
-        }
     }
 
-    private static class LoggerOutputStream extends ByteArrayOutputStream {
-        private final String separator = System.getProperty("line.separator");
-        private final Level level;
 
-        public LoggerOutputStream(Level level) {
-            super();
-            this.level = level;
-        }
 
-        @Override
-        public synchronized void flush() throws IOException {
-            super.flush();
-            String record = this.toString();
-            super.reset();
 
-            if (record.length() > 0 && !record.equals(separator)) {
-                logger.logp(level, "LoggerOutputStream", "log" + level, record);
-            }
-        }
-    }
 
     private class FancyConsoleHandler extends ConsoleHandler {
         public FancyConsoleHandler() {
@@ -473,6 +302,6 @@ public final class ConsoleManager {
 
             return builder.toString();
         }
-    }
+    }*/
 
 }
