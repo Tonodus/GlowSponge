@@ -1,12 +1,11 @@
 package net.glowstone.io.nbt;
 
 import net.glowstone.GlowServer;
-import net.glowstone.GlowWorld;
 import net.glowstone.io.WorldMetadataService;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.NBTInputStream;
 import net.glowstone.util.nbt.NBTOutputStream;
-import org.bukkit.Bukkit;
+import net.glowstone.world.GlowWorld;
 import org.bukkit.Location;
 
 import java.io.*;
@@ -24,7 +23,7 @@ public class NbtWorldMetadataService implements WorldMetadataService {
     public NbtWorldMetadataService(GlowWorld world, File dir) {
         this.world = world;
         this.dir = dir;
-        server = (GlowServer) Bukkit.getServer();
+        this.server = world.getServer();
 
         if (!dir.isDirectory() && !dir.mkdirs()) {
             server.getLogger().warning("Failed to create directory: " + dir);

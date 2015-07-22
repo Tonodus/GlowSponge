@@ -1,15 +1,17 @@
 package net.glowstone.io.nbt;
 
+import com.flowpowered.math.vector.Vector3d;
 import net.glowstone.GlowServer;
 import net.glowstone.constants.ItemIds;
 import net.glowstone.inventory.GlowItemFactory;
+import net.glowstone.util.MutableVector;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.TagType;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
+import org.bukkit.ItemTypes;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,18 +32,18 @@ public final class NbtSerialization {
      * @return The resulting ItemStack, or null.
      */
     public static ItemStack readItem(CompoundTag tag) {
-        final Material material;
+        final ItemType material;
         if (tag.isString("id")) {
             material = ItemIds.getItem(tag.getString("id"));
         } else if (tag.isShort("id")) {
-            material = Material.getMaterial(tag.getShort("id"));
+            material = ItemTypes.getItemTypes(tag.getShort("id"));
         } else {
             return null;
         }
         final short damage = tag.isShort("Damage") ? tag.getShort("Damage") : 0;
         final byte count = tag.isByte("Count") ? tag.getByte("Count") : 0;
 
-        if (material == null || material == Material.AIR || count == 0) {
+        if (material == null || material == ItemTypes.AIR || count == 0) {
             return null;
         }
         ItemStack stack = new ItemStack(material, count, damage);
@@ -60,7 +62,7 @@ public final class NbtSerialization {
      */
     public static CompoundTag writeItem(ItemStack stack, int slot) {
         CompoundTag tag = new CompoundTag();
-        if (stack == null || stack.getType() == Material.AIR) {
+        if (stack == null || stack.getItem() == ItemTypes.AIR) {
             return tag;
         }
         tag.putString("id", ItemIds.getName(stack.getType()));
@@ -122,10 +124,10 @@ public final class NbtSerialization {
         if (compound.isLong("WorldUUIDLeast") && compound.isLong("WorldUUIDMost")) {
             long uuidLeast = compound.getLong("WorldUUIDLeast");
             long uuidMost = compound.getLong("WorldUUIDMost");
-            world = server.getWorld(new UUID(uuidMost, uuidLeast));
+            world = server.getWorld(new UUID(uuidMost, uuidLeast)).orNull();
         }
         if (world == null && compound.isString("World")) {
-            world = server.getWorld(compound.getString("World"));
+            world = server.getWorld(compound.getString("World")).orNull();
         }
         if (world == null && compound.isInt("Dimension")) {
             int dim = compound.getInt("Dimension");
@@ -191,9 +193,9 @@ public final class NbtSerialization {
      * @param loc The location to write.
      * @param tag The tag to write to.
      */
-    public static void locationToListTags(Location loc, CompoundTag tag) {
+    public static void locationToListTags(Location loc, double yaw, double pitch, CompoundTag tag) {
         tag.putList("Pos", TagType.DOUBLE, Arrays.asList(loc.getX(), loc.getY(), loc.getZ()));
-        tag.putList("Rotation", TagType.FLOAT, Arrays.asList(loc.getYaw(), loc.getPitch()));
+        tag.putList("Rotation", TagType.FLOAT, Arrays.asList(yaw, pitch));
     }
 
     /**
@@ -202,11 +204,11 @@ public final class NbtSerialization {
      * @param list The list to read from.
      * @return The Vector.
      */
-    public static Vector listToVector(List<Double> list) {
+    public static MutableVector listToVector(List<Double> list) {
         if (list.size() == 3) {
-            return new Vector(list.get(0), list.get(1), list.get(2));
+            return new MutableVector(list.get(0), list.get(1), list.get(2));
         }
-        return new Vector(0, 0, 0);
+        return new MutableVector(0, 0, 0);
     }
 
     /**
@@ -214,7 +216,7 @@ public final class NbtSerialization {
      * @param vec The vector to write.
      * @return The list.
      */
-    public static List<Double> vectorToList(Vector vec) {
+    public static List<Double> vectorToList(Vector3d vec) {
         return Arrays.asList(vec.getX(), vec.getY(), vec.getZ());
     }
 

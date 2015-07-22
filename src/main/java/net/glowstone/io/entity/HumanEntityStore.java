@@ -1,6 +1,6 @@
 package net.glowstone.io.entity;
 
-import net.glowstone.entity.GlowHumanEntity;
+import net.glowstone.entity.player.GlowHumanEntity;
 import net.glowstone.io.nbt.NbtSerialization;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.TagType;

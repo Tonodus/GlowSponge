@@ -4,7 +4,9 @@ import net.glowstone.entity.GlowEntity;
 import net.glowstone.io.nbt.NbtSerialization;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.TagType;
-import org.bukkit.Location;
+import net.glowstone.world.GlowChunk;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.UUID;
 
@@ -89,7 +91,8 @@ abstract class EntityStore<T extends GlowEntity> {
 
         // write world info, Pos, Rotation, and Motion
         Location loc = entity.getLocation();
-        NbtSerialization.writeWorld(loc.getWorld(), tag);
+        World world = loc.getExtent() instanceof World ? (World) loc.getExtent() : ((GlowChunk) loc.getExtent()).getWorld();
+        NbtSerialization.writeWorld(world, tag);
         NbtSerialization.locationToListTags(loc, tag);
         tag.putList("Motion", TagType.DOUBLE, NbtSerialization.vectorToList(entity.getVelocity()));
 

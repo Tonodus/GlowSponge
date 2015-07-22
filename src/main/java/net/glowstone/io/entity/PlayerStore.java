@@ -1,6 +1,6 @@
 package net.glowstone.io.entity;
 
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.util.nbt.CompoundTag;
 import org.bukkit.GameMode;
 import org.bukkit.Location;

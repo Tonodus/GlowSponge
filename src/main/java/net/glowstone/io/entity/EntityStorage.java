@@ -1,11 +1,11 @@
 package net.glowstone.io.entity;
 
-import net.glowstone.GlowWorld;
 import net.glowstone.entity.GlowEntity;
 import net.glowstone.io.nbt.NbtSerialization;
 import net.glowstone.util.nbt.CompoundTag;
-import org.bukkit.Location;
-import org.bukkit.World;
+import net.glowstone.world.GlowWorld;
+import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -135,13 +135,13 @@ public final class EntityStorage {
         EntityStore<?> store = find(entity.getClass(), "load");
 
         // work out the entity's location, using its current location if unavailable
-        World world = NbtSerialization.readWorld(entity.getServer(), compound);
+        World world = NbtSerialization.readWorld(entity.getWorld().getServer(), compound);
         if (world == null) {
             world = entity.getWorld();
         }
         Location location = NbtSerialization.listTagsToLocation(world, compound);
         if (location != null) {
-            entity.teleport(location);
+            entity.setLocation(location);
         }
 
         // read the rest of the entity's information

@@ -1,10 +1,7 @@
 package net.glowstone.io.anvil;
 
-import net.glowstone.GlowChunk;
-import net.glowstone.GlowChunk.ChunkSection;
-import net.glowstone.GlowChunkSnapshot;
 import net.glowstone.GlowServer;
-import net.glowstone.block.entity.TileEntity;
+import net.glowstone.block.entity.GlowTileEntity;
 import net.glowstone.entity.GlowEntity;
 import net.glowstone.io.ChunkIoService;
 import net.glowstone.io.entity.EntityStorage;
@@ -13,6 +10,9 @@ import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.NBTInputStream;
 import net.glowstone.util.nbt.NBTOutputStream;
 import net.glowstone.util.nbt.TagType;
+import net.glowstone.world.ChunkSection;
+import net.glowstone.world.GlowChunk;
+import net.glowstone.world.GlowChunkSnapshot;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -128,7 +128,7 @@ public final class AnvilChunkIoService implements ChunkIoService {
             int tx = tileEntityTag.getInt("x");
             int ty = tileEntityTag.getInt("y");
             int tz = tileEntityTag.getInt("z");
-            TileEntity tileEntity = chunk.getEntity(tx & 0xf, ty, tz & 0xf);
+            GlowTileEntity tileEntity = (GlowTileEntity) chunk.getTileEntity(tx & 0xf, ty, tz & 0xf).orNull();
             if (tileEntity != null) {
                 try {
                     tileEntity.loadNbt(tileEntityTag);
@@ -224,7 +224,7 @@ public final class AnvilChunkIoService implements ChunkIoService {
 
         // tile entities
         List<CompoundTag> tileEntities = new ArrayList<>();
-        for (TileEntity entity : chunk.getRawTileEntities()) {
+        for (GlowTileEntity entity : chunk.getRawTileEntities()) {
             try {
                 CompoundTag tag = new CompoundTag();
                 entity.saveNbt(tag);

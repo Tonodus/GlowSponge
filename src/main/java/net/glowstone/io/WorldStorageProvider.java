@@ -1,6 +1,6 @@
 package net.glowstone.io;
 
-import net.glowstone.GlowWorld;
+import net.glowstone.world.GlowWorld;
 
 import java.io.File;
 

@@ -1,8 +1,9 @@
 package net.glowstone.io;
 
-import net.glowstone.entity.GlowPlayer;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
+import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.entity.player.GlowUser;
+import org.spongepowered.api.entity.player.User;
+import org.spongepowered.api.world.Location;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public interface PlayerDataService {
      * included in OfflinePlayer form.
      * @return All known offline players.
      */
-    Collection<OfflinePlayer> getOfflinePlayers();
+    Collection<User> getOfflinePlayers();
 
     /**
      * Locally look up the UUID of an offline player based on their name. If
@@ -102,6 +103,13 @@ public interface PlayerDataService {
          * @param player The target player.
          */
         void readData(GlowPlayer player);
+
+        /**
+         * Finish reading the rest of the player's entity data into the
+         * specified user entity.
+         * @param glowUser The target user.
+         */
+        void readData(GlowUser glowUser);
 
         /**
          * Close any resources involved in reading the player data.

@@ -1,9 +1,9 @@
 package net.glowstone.io.nbt;
 
-import net.glowstone.GlowOfflinePlayer;
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.entity.meta.profile.ProfileCache;
+import net.glowstone.entity.player.GlowUser;
 import net.glowstone.io.PlayerDataService;
 import net.glowstone.io.entity.EntityStorage;
 import net.glowstone.util.nbt.CompoundTag;
@@ -47,6 +47,10 @@ public class NbtPlayerDataService implements PlayerDataService {
 
     private void readDataImpl(GlowPlayer player, CompoundTag playerTag) {
         EntityStorage.load(player, playerTag);
+    }
+
+    private void readDataImpl(GlowUser user, CompoundTag tag) {
+        EntityStorage.load(user, tag);
     }
 
     @Override
@@ -226,6 +230,12 @@ public class NbtPlayerDataService implements PlayerDataService {
         public void readData(GlowPlayer player) {
             checkOpen();
             readDataImpl(player, tag);
+        }
+
+        @Override
+        public void readData(GlowUser glowUser) {
+            checkOpen();
+            readDataImpl(glowUser, tag);
         }
 
         @Override
