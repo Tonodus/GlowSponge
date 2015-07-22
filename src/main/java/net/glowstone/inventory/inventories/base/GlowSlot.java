@@ -12,28 +12,21 @@ import org.spongepowered.api.item.inventory.Slot;
 import org.spongepowered.api.item.inventory.transaction.InventoryOperationResult;
 import org.spongepowered.api.text.translation.Translatable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class GlowSlot implements Slot {
+public class GlowSlot extends GlowInventory implements Slot {
     private static final Optional<ItemStack> AIR = Optional.of(null);
-    private final Inventory parent;
+
     private ItemStack itemStack;
 
-    public GlowSlot(Inventory parent) {
-        this.parent = parent;
+    public GlowSlot(GlowInventory parent) {
+        super(parent);
     }
 
     @Override
     public int getStackSize() {
         return itemStack.getQuantity();
-    }
-
-    @Nullable
-    @Override
-    public Inventory parent() {
-        return parent;
     }
 
     @Override
@@ -63,6 +56,7 @@ public class GlowSlot implements Slot {
         }
         ItemStack itemStack = this.itemStack;
         this.itemStack = null;
+        notifyChange();
         return Optional.of(itemStack);
     }
 
@@ -75,6 +69,7 @@ public class GlowSlot implements Slot {
             ItemStack returnStack = GlowItemStackBuilder.copy(itemStack);
             returnStack.setQuantity(limit);
             itemStack.setQuantity(itemStack.getQuantity() - limit);
+            notifyChange();
             return Optional.of(returnStack);
         } else {
             return poll();
@@ -106,6 +101,7 @@ public class GlowSlot implements Slot {
         }
         if (itemStack == null) {
             itemStack = GlowItemStackBuilder.copy(stack);
+            notifyChange();
             stack.setQuantity(0);
             return true;
         }
@@ -113,6 +109,7 @@ public class GlowSlot implements Slot {
             int maxAdd = itemStack.getMaxStackQuantity() - itemStack.getQuantity();
             int added = Math.min(itemStack.getQuantity(), maxAdd);
             itemStack.setQuantity(itemStack.getQuantity() + added);
+            notifyChange();
             stack.setQuantity(stack.getQuantity() - added);
             return true;
         }
@@ -135,12 +132,16 @@ public class GlowSlot implements Slot {
 
             }
         }
+
+        notifyChange();
+
         return null;
     }
 
     @Override
     public void clear() {
         itemStack = null;
+        notifyChange();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package net.glowstone.inventory.inventories.base;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterators;
+import net.glowstone.inventory.inventories.GlowEmptyInventory;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.InventoryProperty;
@@ -8,37 +10,22 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.transaction.InventoryOperationResult;
 import org.spongepowered.api.text.translation.Translatable;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
-public class GlowBaseInventory implements Inventory {
-    private final Inventory parent;
-    private final Inventory[] children;
+public abstract class GlowBaseInventory<C extends Inventory> extends GlowInventory implements Inventory {
 
-    public GlowBaseInventory() {
-        this(null);
+    protected GlowBaseInventory(GlowInventory parent) {
+        super(parent);
     }
 
-    public GlowBaseInventory(Inventory parent) {
-        this.parent = parent;
-        this.children = getChildren();
-    }
-
-    protected Inventory[] getChildren() {
-        return new Inventory[0];
-    }
-
-    @Nullable
-    @Override
-    public Inventory parent() {
-        return parent;
-    }
+    protected abstract C[] getChildren();
 
     @Override
     public <T extends Inventory> Iterable<T> slots() {
-        return (Iterable) Arrays.asList(children);
+        return null;
     }
 
     @Override
@@ -90,31 +77,61 @@ public class GlowBaseInventory implements Inventory {
 
     @Override
     public int size() {
-        return 0;
+        int size = 0;
+        for (int i = 0; i < children.length; i++) {
+            size += children[i].size();
+        }
+        return size;
     }
 
     @Override
     public int totalItems() {
-        return 0;
+        int totalItems = 0;
+        for (int i = 0; i < children.length; i++) {
+            totalItems += children[i].totalItems();
+        }
+        return totalItems;
     }
 
     @Override
     public int capacity() {
-        return 0;
+        int capacity = 0;
+        for (int i = 0; i < children.length; i++) {
+            capacity += children[i].capacity();
+        }
+        return capacity;
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        for (int i = 0; i < children.length; i++) {
+            if (!children[i].isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
     public boolean contains(ItemStack stack) {
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].contains(stack)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
     @Override
     public boolean contains(ItemType type) {
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].contains(type)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -150,7 +167,23 @@ public class GlowBaseInventory implements Inventory {
 
     @Override
     public <T extends Inventory> T query(Class<?>... types) {
-        return null;
+        List<Inventory> found = new ArrayList<>();
+
+        for (int i = 0; i < children.length; i++) {
+            for (Class<?> clazz : types) {
+                if (clazz.isAssignableFrom(children[i].getClass())) {
+                    found.add(children[i]);
+                }
+            }
+        }
+
+        if (found.size() == 1) {
+            return (T) found.get(0);
+        } else if (found.size() == 0) {
+            return (T) new GlowEmptyInventory(this);
+        } else {
+            return null; //new InventoryQueryResult(found);
+        }
     }
 
     @Override
@@ -185,7 +218,7 @@ public class GlowBaseInventory implements Inventory {
 
     @Override
     public Iterator<Inventory> iterator() {
-        return null;
+        return Iterators.forArray(children);
     }
 
     @Override

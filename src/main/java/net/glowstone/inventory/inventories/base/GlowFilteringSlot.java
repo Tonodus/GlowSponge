@@ -2,14 +2,13 @@ package net.glowstone.inventory.inventories.base;
 
 import net.glowstone.inventory.ItemMatcher;
 import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.slot.FilteringSlot;
 
 public class GlowFilteringSlot extends GlowSlot implements FilteringSlot {
     private final ItemMatcher matcher;
 
-    public GlowFilteringSlot(Inventory parent, ItemMatcher matcher) {
+    public GlowFilteringSlot(GlowInventory parent, ItemMatcher matcher) {
         super(parent);
         this.matcher = matcher;
     }

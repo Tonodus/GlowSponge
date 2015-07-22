@@ -1,39 +1,49 @@
 package net.glowstone.inventory.inventories.player;
 
 import com.google.common.base.Optional;
-import net.glowstone.inventory.inventories.GlowEmptyInventory;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.inventory.inventories.base.GlowBaseInventory;
-import net.glowstone.item.GlowItemStackBuilder;
-import org.spongepowered.api.item.ItemType;
-import org.spongepowered.api.item.inventory.Inventory;
-import org.spongepowered.api.item.inventory.InventoryProperty;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.item.inventory.transaction.InventoryOperationResult;
-import org.spongepowered.api.text.translation.Translatable;
+import net.glowstone.inventory.inventories.base.GlowInventory;
+import org.spongepowered.api.entity.living.Human;
+import org.spongepowered.api.item.inventory.entity.Hotbar;
+import org.spongepowered.api.item.inventory.entity.HumanInventory;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-public class GlowPlayerInventory extends GlowBaseInventory implements Inventory {
+public class GlowPlayerInventory extends GlowBaseInventory<GlowInventory> implements HumanInventory {
     private final GlowArmorInventory armorInventory;
     private final GlowPlayerRestInventory restInventory;
     private final GlowHotbar hotbar;
+    private final GlowPlayer player;
 
-    public GlowPlayerInventory() {
+    public GlowPlayerInventory(GlowPlayer player) {
+        super(null);
+        this.player = player;
         armorInventory = new GlowArmorInventory(this);
         restInventory = new GlowPlayerRestInventory(this);
         hotbar = new GlowHotbar(this);
     }
 
-    @Nullable
+
     @Override
-    public Inventory parent() {
-        return null;
+    protected GlowInventory[] getChildren() {
+        return new GlowInventory[]{
+                armorInventory,
+                hotbar,
+                restInventory
+        };
     }
 
     @Override
+    public Hotbar getHotbar() {
+        return hotbar;
+    }
+
+    @Override
+    public Optional<Human> getCarrier() {
+        return Optional.fromNullable((Human) player);
+    }
+
+
+    /*@Override
     public <T extends Inventory> Iterable<T> slots() {
         return (Iterable<T>) Arrays.asList(armorInventory, restInventory, hotbar);
     }
@@ -238,4 +248,5 @@ public class GlowPlayerInventory extends GlowBaseInventory implements Inventory 
     public Translatable getName() {
         return null;
     }
+    */
 }

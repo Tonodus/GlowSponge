@@ -13,38 +13,32 @@ import org.spongepowered.api.item.inventory.type.GridInventory;
 import org.spongepowered.api.item.inventory.type.InventoryRow;
 import org.spongepowered.api.text.translation.Translatable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class GlowGridInventoryRow implements InventoryRow {
+public class GlowGridInventoryRow extends GlowInventory implements InventoryRow {
     private final int y;
     private final GridInventory inventory;
 
-    public GlowGridInventoryRow(int y, GridInventory inventory) {
+    public GlowGridInventoryRow(int y, GlowGridInventory inventory) {
+        super(inventory);
         this.y = y;
         this.inventory = inventory;
     }
 
-    private Optional<ItemStack> check(SlotPos pos) {
-        return pos.getX() == 0 ? Optional.absent();
-    }
-
     @Override
     public Optional<ItemStack> poll(SlotPos pos) {
-        return check(pos);
+        return inventory.poll(pos.getX(), y);
     }
-
-
 
     @Override
     public Optional<ItemStack> poll(SlotPos pos, int limit) {
-        return null;
+        return inventory.poll(pos.getX(), y, limit);
     }
 
     @Override
     public Optional<ItemStack> peek(SlotPos pos) {
-        return null;
+        return inventory.peek(pos.getX(), y);
     }
 
     @Override
@@ -89,12 +83,6 @@ public class GlowGridInventoryRow implements InventoryRow {
 
     @Override
     public Optional<Slot> getSlot(SlotIndex index) {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Inventory parent() {
         return null;
     }
 
