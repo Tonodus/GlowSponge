@@ -1,6 +1,8 @@
 package net.glowstone.service.profile;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import net.glowstone.entity.meta.profile.ProfileCache;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.service.profile.GameProfileResolver;
 
@@ -15,7 +17,11 @@ public class GlowGameProfileResolver implements GameProfileResolver {
 
     @Override
     public ListenableFuture<GameProfile> get(UUID uniqueId, boolean useCache) {
-        return null;
+        if (useCache && ProfileCache.contains(uniqueId)) {
+            return Futures.immediateFuture((GameProfile) ProfileCache.getProfile(uniqueId));
+        } else {
+            net.glowstone.entity.meta.profile.
+        }
     }
 
     @Override

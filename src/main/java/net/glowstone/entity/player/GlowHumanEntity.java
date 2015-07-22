@@ -38,11 +38,6 @@ import java.util.UUID;
 public abstract class GlowHumanEntity extends GlowAgent implements Human {
 
     /**
-     * The User containing all the entity's data.
-     */
-    private final GlowUser user;
-
-    /**
      * The inventory of this human.
      */
     private final GlowPlayerInventory inventory;
@@ -83,9 +78,8 @@ public abstract class GlowHumanEntity extends GlowAgent implements Human {
      * @param location The location.
      * @param profile The human's profile with name and UUID information.
      */
-    public GlowHumanEntity(GlowServer server, GlowWorld world, Vector3d location, PlayerProfile profile, PlayerDataService.PlayerReader reader) {
+    public GlowHumanEntity(GlowServer server, GlowWorld world, Vector3d location) {
         super(server, world, location);
-        this.user = new GlowUser(server, profile, reader);
         gameMode = server.getDefaultGameMode();
         this.inventory = new GlowPlayerInventory(this);
         addViewer(inventoryView.getTopInventory());
@@ -98,9 +92,9 @@ public abstract class GlowHumanEntity extends GlowAgent implements Human {
     @Override
     public void setUniqueId(UUID uuid) {
         // silently allow setting the same UUID again
-        if (!user.getUniqueId().equals(uuid)) {
-            throw new IllegalStateException("UUID of " + this + " is already " + user.getUniqueId());
-        }
+       // if (!user.getUniqueId().equals(uuid)) {
+      //     throw new IllegalStateException("UUID of " + this + " is already " + user.getUniqueId());
+       // }
     }
 
     @Override
@@ -113,7 +107,7 @@ public abstract class GlowHumanEntity extends GlowAgent implements Human {
         int z = Position.getIntZ(location);
         int yaw = Position.getIntYaw(this.yaw);
         int pitch = Position.getIntPitch(this.pitch);
-        result.add(new SpawnPlayerMessage(id, user.getUniqueId(), x, y, z, yaw, pitch, 0, metadata.getEntryList()));
+        result.add(new SpawnPlayerMessage(id, , x, y, z, yaw, pitch, 0, metadata.getEntryList()));
 
         // head facing
         result.add(new EntityHeadRotationMessage(id, yaw));
@@ -136,14 +130,6 @@ public abstract class GlowHumanEntity extends GlowAgent implements Human {
         } else {
             sleepingTicks = 0;
         }
-    }
-
-    /**
-     * Gets the User with this Human's data.
-     * @return the user object
-     */
-    public final GlowUser getUser() {
-        return user;
     }
 
     ////////////////////////////////////////////////////////////////////////////

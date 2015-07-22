@@ -39,4 +39,12 @@ public final class ProfileCache {
         uuidCache.put(playerName, PlayerDataFetcher.getUUID(playerName));
         return uuidCache.get(playerName);
     }
+
+    public static boolean contains(String playerName) {
+        return uuidCache.containsKey(playerName) && contains(uuidCache.get(playerName));
+    }
+
+    public static boolean contains(UUID uuid) {
+        return profileCache.containsKey(uuid);
+    }
 }

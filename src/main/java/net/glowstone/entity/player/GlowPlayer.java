@@ -379,6 +379,11 @@ public final class GlowPlayer extends GlowHumanEntity implements Player {
 
 
     @Override
+    public PlayerProfile getProfile() {
+        return gameProfile;
+    }
+
+    @Override
     public EntityType getType() {
         return EntityTypes.PLAYER;
     }

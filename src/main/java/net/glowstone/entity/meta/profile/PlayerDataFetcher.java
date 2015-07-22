@@ -1,12 +1,8 @@
 package net.glowstone.entity.meta.profile;
 
+import com.google.gson.*;
 import net.glowstone.GlowServer;
 import net.glowstone.util.UuidUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
@@ -49,16 +45,16 @@ final class PlayerDataFetcher {
             return null;
         }
 
-        JSONObject json;
+        JsonObject json;
         try {
-            json = (JSONObject) new JSONParser().parse(new InputStreamReader(is));
-        } catch (ParseException e) {
+            json = (JsonObject) new JsonParser().parse(new InputStreamReader(is));
+        } catch (JsonParseException e) {
             GlowServer.logger.log(Level.WARNING, "Failed to parse profile response", e);
             return null;
-        } catch (IOException e) {
+        } /*catch (IOException e) {
             GlowServer.logger.log(Level.WARNING, "Failed to look up profile", e);
             return null;
-        }
+        }*/
         return PlayerProfile.parseProfile(json);
     }
 
@@ -83,21 +79,26 @@ final class PlayerDataFetcher {
         List<String> playerList = new ArrayList<>();
         playerList.add(playerName);
 
-        JSONArray json;
+        JsonArray jsonPlayerList = new JsonArray();
+        for (String str : playerList) {
+            jsonPlayerList.add(new JsonPrimitive(str));
+        }
+
+        JsonArray json;
 
         try {
             try (DataOutputStream os = new DataOutputStream(conn.getOutputStream())) {
-                os.writeBytes(JSONValue.toJSONString(playerList));
+                os.writeBytes(jsonPlayerList.toString());
             }
 
-            json = (JSONArray) JSONValue.parse(new InputStreamReader(conn.getInputStream()));
+            json = (JsonArray) new JsonParser().parse(new InputStreamReader(conn.getInputStream()));
         } catch (IOException e) {
             GlowServer.logger.warning("Couldn't get UUID due to IO error: " + e.toString());
             return null;
         }
 
         if (json.size() > 0) {
-            String uuid = (String) ((JSONObject) json.get(0)).get("id");
+            String uuid = ((JsonObject) json.get(0)).get("id").getAsString();
             return UuidUtils.fromFlatString(uuid);
         }
         return null;

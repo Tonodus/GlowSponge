@@ -18,6 +18,12 @@ import org.spongepowered.api.service.scheduler.SchedulerService;
 import java.net.BindException;
 
 public class GlowGame implements Game {
+    private static GlowGame INSTANCE;
+
+    public static final GlowGame instance() {
+        return INSTANCE;
+    }
+
     private final GlowServer server;
     private final GlowPluginManager pluginManager;
     private final GlowEventManager eventManager;
@@ -29,6 +35,8 @@ public class GlowGame implements Game {
     private final Platform platform;
 
     public GlowGame() {
+        INSTANCE = this;
+
         this.server = new GlowServer(this, new ServerConfig(null, null, null));
         this.pluginManager = new GlowPluginManager(this);
         this.eventManager = new GlowEventManager(this);

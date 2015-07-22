@@ -1,16 +1,16 @@
 package net.glowstone.entity.meta.profile;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import net.glowstone.GlowGame;
 import net.glowstone.GlowServer;
 import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.util.UuidUtils;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.Tag;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.apache.commons.lang.Validate;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.apache.commons.lang3.Validate;
 import org.spongepowered.api.GameProfile;
+import org.spongepowered.api.entity.player.Player;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -61,9 +61,9 @@ public final class PlayerProfile implements GameProfile {
             return null;
         }
 
-        Player player = ((GlowServer) Bukkit.getServer()).getPlayer(name);
-        if (player != null) {
-            return ((GlowPlayer) player).getProfile();
+        com.google.common.base.Optional<Player> player = GlowGame.instance().getServer().getPlayer(name);
+        if (player.isPresent()) {
+            return ((GlowPlayer) player.get()).getProfile();
         }
 
         UUID uuid = ProfileCache.getUUID(name);
@@ -141,10 +141,10 @@ public final class PlayerProfile implements GameProfile {
         return new PlayerProfile(name, UUID.fromString(uuidStr), properties);
     }
 
-    public static PlayerProfile parseProfile(JSONObject json) {
-        final String name = (String) json.get("name");
-        final String id = (String) json.get("id");
-        final JSONArray propsArray = (JSONArray) json.get("properties");
+    public static PlayerProfile parseProfile(JsonObject json) {
+        final String name = json.get("name").getAsString();
+        final String id = json.get("id").getAsString();
+        final JsonArray propsArray = json.get("properties").getAsJsonArray();
 
         // Parse UUID
         final UUID uuid;
@@ -158,10 +158,10 @@ public final class PlayerProfile implements GameProfile {
         // Parse properties
         final List<PlayerProperty> properties = new ArrayList<>(propsArray.size());
         for (Object obj : propsArray) {
-            JSONObject propJson = (JSONObject) obj;
-            String propName = (String) propJson.get("name");
-            String value = (String) propJson.get("value");
-            String signature = (String) propJson.get("signature");
+            JsonObject propJson = (JsonObject) obj;
+            String propName = propJson.get("name").getAsString();
+            String value = propJson.get("value").getAsString();
+            String signature = propJson.get("signature").getAsString();
             properties.add(new PlayerProperty(propName, value, signature));
         }
 

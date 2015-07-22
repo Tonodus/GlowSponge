@@ -436,6 +436,10 @@ public abstract class GlowEntity extends GlowDataHolder implements Entity {
         this.location.updateFrom(location);
     }
 
+    public MutableVector getRawLocation() {
+        return location;
+    }
+
     /**
      * Sets this entity's unique identifier if possible.
      * @param uuid The new UUID. Must not be null.

@@ -1,7 +1,7 @@
 package net.glowstone;
 
 import com.google.common.base.Optional;
-import net.glowstone.data.type.GlowProfession;
+import net.glowstone.entity.meta.profile.PlayerProfile;
 import net.glowstone.item.recipe.GlowRecipeRegistry;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.GameProfile;
@@ -175,9 +175,9 @@ public class GlowGameRegistry implements GameRegistry {
 
     @Override
     public Collection<Career> getCareers(Profession profession) {
-        if (profession instanceof GlowProfession) {
-            return ((GlowProfession) profession).getCareers();
-        }
+        /*if (profession instanceof GlowProfession) {
+            return ((GlowProfession) profession).get
+        }*/
         return Collections.emptyList();
     }
 
@@ -223,7 +223,7 @@ public class GlowGameRegistry implements GameRegistry {
 
     @Override
     public GameProfile createGameProfile(UUID uuid, String name) {
-        return null;
+        return new PlayerProfile(name, uuid);
     }
 
     @Override

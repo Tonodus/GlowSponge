@@ -2,8 +2,8 @@ package net.glowstone.entity.player;
 
 import com.google.common.base.Optional;
 import net.glowstone.GlowServer;
+import net.glowstone.entity.meta.profile.PlayerProfile;
 import net.glowstone.io.PlayerDataService;
-import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.data.*;
 import org.spongepowered.api.data.manipulator.entity.AchievementData;
 import org.spongepowered.api.data.manipulator.entity.BanData;
@@ -29,11 +29,11 @@ import java.util.UUID;
 
 public class GlowUser implements User {
     private final GlowServer server;
-    private final GameProfile gameProfile;
+    private final PlayerProfile gameProfile;
     private final PlayerDataService.PlayerReader reader;
     private boolean isLoaded;
 
-    public GlowUser(GlowServer server, GameProfile gameProfile, PlayerDataService.PlayerReader reader) {
+    public GlowUser(GlowServer server, PlayerProfile gameProfile, PlayerDataService.PlayerReader reader) {
         this.server = server;
         this.gameProfile = gameProfile;
         this.reader = reader;
@@ -49,7 +49,7 @@ public class GlowUser implements User {
     }
 
     @Override
-    public GameProfile getProfile() {
+    public PlayerProfile getProfile() {
         return gameProfile;
     }
 
