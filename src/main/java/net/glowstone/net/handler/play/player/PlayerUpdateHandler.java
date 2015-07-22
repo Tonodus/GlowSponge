@@ -1,22 +1,21 @@
 package net.glowstone.net.handler.play.player;
 
 import com.flowpowered.networking.MessageHandler;
-import net.glowstone.EventFactory;
 import net.glowstone.event.entity.GlowPlayerMoveEvent;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.game.PositionRotationMessage;
 import net.glowstone.net.message.play.player.PlayerUpdateMessage;
-import org.bukkit.Location;
+import net.glowstone.util.MutableVector;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.spongepowered.api.world.Location;
 
 public final class PlayerUpdateHandler implements MessageHandler<GlowSession, PlayerUpdateMessage> {
 
     @Override
     public void handle(GlowSession session, PlayerUpdateMessage message) {
-        Location oldLocation = session.getPlayer().getLocation();
-        Location newLocation = oldLocation.clone();
-        message.update(newLocation);
+        MutableVector oldLocation = session.getPlayer().getRawLocation();
+        Location newLocation = message.updateLocation(session.getPlayer().getLocation());
 
         // don't let players move more than 16 blocks in a single packet.
         // this is NOT robust hack prevention - only to prevent client

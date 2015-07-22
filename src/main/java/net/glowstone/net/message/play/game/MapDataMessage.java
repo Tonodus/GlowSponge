@@ -3,7 +3,7 @@ package net.glowstone.net.message.play.game;
 import com.flowpowered.networking.Message;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import java.util.List;
 

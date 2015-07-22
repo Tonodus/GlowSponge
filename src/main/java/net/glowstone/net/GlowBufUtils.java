@@ -1,18 +1,18 @@
 package net.glowstone.net;
 
-import com.flowpowered.math.vector.Vector3l;
+import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.networking.util.ByteBufUtils;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import net.glowstone.GlowServer;
-import net.glowstone.util.MutableVector;
 import net.glowstone.entity.meta.MetadataIndex;
 import net.glowstone.entity.meta.MetadataMap;
 import net.glowstone.entity.meta.MetadataType;
 import net.glowstone.id.ItemIdManager;
 import net.glowstone.item.ItemHelper;
 import net.glowstone.text.TextUtils;
+import net.glowstone.util.MutableVector;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.NBTInputStream;
 import net.glowstone.util.nbt.NBTOutputStream;
@@ -222,7 +222,7 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @param vector The vector to write.
      */
-    public static void writeBlockPosition(ByteBuf buf, Vector3l vector) {
+    public static void writeBlockPosition(ByteBuf buf, Vector3i vector) {
         writeBlockPosition(buf, vector.getX(), vector.getY(), vector.getZ());
     }
 

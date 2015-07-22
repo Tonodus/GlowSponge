@@ -12,7 +12,7 @@ public final class ChatMessage implements Message {
     private final Text text;
     private final int mode;
 
-    public ChatMessage(Text json) {
-        this(json, 0);
+    public ChatMessage(Text text) {
+        this(text, 0);
     }
 }

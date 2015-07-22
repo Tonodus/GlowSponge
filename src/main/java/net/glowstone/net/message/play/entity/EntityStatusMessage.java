@@ -3,7 +3,6 @@ package net.glowstone.net.message.play.entity;
 import com.flowpowered.networking.Message;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.EntityEffect;
 
 @Data
 @RequiredArgsConstructor
@@ -20,8 +19,8 @@ public final class EntityStatusMessage implements Message {
 
     private final int id, status;
 
-    public EntityStatusMessage(int id, EntityEffect effect) {
+ /*   public EntityStatusMessage(int id, EntityEffect effect) {
         this(id, effect.getData());
-    }
+    }*/
 
 }

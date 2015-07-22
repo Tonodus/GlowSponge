@@ -1,5 +1,6 @@
 package net.glowstone.net.codec.play.player;
 
+import com.flowpowered.math.vector.Vector3i;
 import com.flowpowered.networking.Codec;
 import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
@@ -25,7 +26,7 @@ public final class TabCompleteCodec implements Codec<TabCompleteMessage> {
     @Override
     public ByteBuf encode(ByteBuf buf, TabCompleteMessage message) throws IOException {
         ByteBufUtils.writeUTF8(buf, message.getText());
-        final BlockVector location = message.getLocation();
+        final Vector3i location = message.getLocation();
         if (location != null) {
             buf.writeBoolean(true);
             GlowBufUtils.writeBlockPosition(buf, location);

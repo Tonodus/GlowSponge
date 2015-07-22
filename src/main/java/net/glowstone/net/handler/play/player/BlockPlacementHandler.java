@@ -5,17 +5,18 @@ import net.glowstone.EventFactory;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockType;
 import net.glowstone.block.entity.GlowTileEntity;
-import net.glowstone.item.behavior.BaseItemBehavior;
 import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.item.behavior.BaseItemBehavior;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.BlockPlacementMessage;
 import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.world.Location;
 
 import java.util.Objects;
 
@@ -73,7 +74,7 @@ public final class BlockPlacementHandler implements MessageHandler<GlowSession, 
 
         // Get values from the message
         Vector clickedLoc = new Vector(message.getCursorX(), message.getCursorY(), message.getCursorZ());
-        BlockFace face = convertFace(message.getDirection());
+        Direction face = convertFace(message.getDirection());
         ItemStack holding = player.getItemInHand();
 
         // check that held item matches
@@ -140,23 +141,23 @@ public final class BlockPlacementHandler implements MessageHandler<GlowSession, 
         return result == Event.Result.DEFAULT ? def : result == Event.Result.ALLOW;
     }
 
-    static void revert(GlowPlayer player, BukkitBlock target) {
+    static void revert(GlowPlayer player, Location target) {
         player.sendBlockChange(target.getLocation(), target.getType(), target.getData());
-        GlowTileEntity entity = target.getTileEntity();
+        GlowTileEntity entity = (GlowTileEntity) target.getTileEntity().orNull();
         if (entity != null) {
             entity.update(player);
         }
     }
 
-    static BlockFace convertFace(int direction) {
+    static Direction convertFace(int direction) {
         if (direction >= 0 && direction < faces.length) {
             return faces[direction];
         } else {
-            return BlockFace.SELF;
+            return Direction.NONE;
         }
     }
 
-    private static final BlockFace[] faces = {
-            BlockFace.DOWN, BlockFace.UP, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST
+    private static final Direction[] faces = {
+            Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST
     };
 }

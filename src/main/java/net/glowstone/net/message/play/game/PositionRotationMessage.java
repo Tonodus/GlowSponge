@@ -1,9 +1,10 @@
 package net.glowstone.net.message.play.game;
 
+import com.flowpowered.math.vector.Vector2f;
 import com.flowpowered.networking.Message;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Location;
+import org.spongepowered.api.world.Location;
 
 @Data
 @RequiredArgsConstructor
@@ -17,8 +18,8 @@ public final class PositionRotationMessage implements Message {
         this(x, y, z, rotation, pitch, 0);
     }
 
-    public PositionRotationMessage(Location location) {
-        this(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    public PositionRotationMessage(Location location, Vector2f rotation) {
+        this(location.getX(), location.getY(), location.getZ(), rotation.getX(), rotation.getY());
     }
 
 }

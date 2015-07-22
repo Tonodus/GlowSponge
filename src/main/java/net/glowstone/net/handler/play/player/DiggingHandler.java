@@ -2,35 +2,37 @@ package net.glowstone.net.handler.play.player;
 
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
-import net.glowstone.block.ItemTable;
-import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.block.GlowBlockType;
 import net.glowstone.entity.objects.GlowItem;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.DiggingMessage;
+import net.glowstone.world.GlowWorld;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.player.gamemode.GameModes;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.world.Location;
 
 public final class DiggingHandler implements MessageHandler<GlowSession, DiggingMessage> {
     @Override
     public void handle(GlowSession session, DiggingMessage message) {
         final GlowPlayer player = session.getPlayer();
-        BukkitWorld world = player.getWorld();
-        BukkitBlock block = world.getBlockAt(message.getX(), message.getY(), message.getZ());
-        BlockFace face = BlockPlacementHandler.convertFace(message.getFace());
-        ItemStack holding = player.getItemInHand();
+        GlowWorld world = player.getWorld();
+        Location block = new Location(world, message.getX(), message.getY(), message.getZ());
+        Direction face = BlockPlacementHandler.convertFace(message.getFace());
+        ItemStack holding = player.getItemInHand().orNull();
 
-        if (block.getRelative(face).getType() == Material.FIRE) {
-            block.getRelative(face).breakNaturally();
+        if (block.getRelative(face).getBlockType() == BlockTypes.FIRE) {
+            block.getRelative(face).removeBlock();
             return; // returns to avoid breaking block in creative
         }
 
@@ -94,13 +96,13 @@ public final class DiggingHandler implements MessageHandler<GlowSession, Digging
                 return;
             }
 
-            BlockType blockType = ItemTable.instance().getBlock(block.getType());
+            GlowBlockType blockType = (GlowBlockType) block.getBlockType();
             if (blockType != null) {
-                blockType.blockDestroy(player, block, face);
+                blockType.getBehavior().blockDestroy(player, block, face);
             }
 
             // destroy the block
-            if (!block.isEmpty() && !block.isLiquid() && player.getGameMode() != GameMode.CREATIVE && world.getGameRuleMap().getBoolean("doTileDrops")) {
+            if (!blockType.isEmpty() && !blockType.isLiquid() && player.getGameMode() != GameModes.CREATIVE && world.getGameRule("doTileDrops")) {
                 for (ItemStack drop : block.getDrops(holding)) {
                     GlowItem item = world.dropItemNaturally(block.getLocation(), drop);
                     item.setPickupDelay(30);
@@ -109,7 +111,7 @@ public final class DiggingHandler implements MessageHandler<GlowSession, Digging
             }
             // STEP_SOUND actually is the block break particles
             world.playEffectExceptTo(block.getLocation(), Effect.STEP_SOUND, block.getTypeId(), 64, player);
-            block.setType(Material.AIR);
+            block.removeBlock();
         } else if (revert) {
             // replace the block that wasn't really dug
             BlockPlacementHandler.revert(player, block);

@@ -5,9 +5,9 @@ import net.glowstone.EventFactory;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.TabCompleteMessage;
 import net.glowstone.net.message.play.player.TabCompleteResponseMessage;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
 import org.bukkit.util.StringUtil;
+import org.spongepowered.api.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,7 @@ public final class TabCompleteHandler implements MessageHandler<GlowSession, Tab
 
         // complete command or username
         if (buffer.startsWith("/")) {
-            List<String> items = session.getServer().getCommandMap().tabComplete(sender, buffer.substring(1));
+            List<String> items = session.getServer().getGame().getCommandDispatcher().getSuggestions(sender, buffer.substring(1));
             if (items != null) {
                 completions.addAll(items);
             }

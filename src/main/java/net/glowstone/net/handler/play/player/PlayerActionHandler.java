@@ -5,6 +5,7 @@ import net.glowstone.GlowServer;
 import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.PlayerActionMessage;
+import org.spongepowered.api.data.manipulator.entity.SneakingData;
 
 public final class PlayerActionHandler implements MessageHandler<GlowSession, PlayerActionMessage> {
     @Override
@@ -13,19 +14,19 @@ public final class PlayerActionHandler implements MessageHandler<GlowSession, Pl
 
         switch (message.getAction()) {
             case 0: // crouch
-                player.setSneaking(true);
+                player.offer(player.getOrCreate(SneakingData.class).get());
                 break;
             case 1: // uncrouch
-                player.setSneaking(false);
+                player.remove(SneakingData.class);
                 break;
             case 2: // leave bed
                 // todo
                 break;
             case 3: // start sprinting
-                player.setSprinting(true);
+                // player.setSprinting(true);
                 break;
             case 4: // stop sprinting
-                player.setSprinting(false);
+                // player.setSprinting(false);
                 break;
             default:
                 GlowServer.logger.info("Player " + player + " sent unknown PlayerAction: " + message.getAction());
