@@ -8,6 +8,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 
 import java.util.Collection;
 
@@ -26,15 +28,15 @@ public class TestItemTypes {
         table = ItemTable.instance();
     }
 
-    private final Material material;
+    private final ItemType material;
 
-    public TestItemTypes(Material material) {
+    public TestItemTypes(ItemType material) {
         this.material = material;
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> getCases() {
-        return ParameterUtils.enumCases(Material.values());
+        return ParameterUtils.enumCases(ItemTypes.);
     }
 
     @Test

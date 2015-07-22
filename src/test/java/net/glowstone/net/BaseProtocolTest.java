@@ -8,7 +8,6 @@ import io.netty.buffer.Unpooled;
 import net.glowstone.net.message.play.inv.HeldItemMessage;
 import net.glowstone.net.protocol.GlowProtocol;
 import net.glowstone.net.protocol.PlayProtocol;
-import net.glowstone.testutils.ServerShim;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -17,7 +16,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Base tests for each {@link GlowProtocol}.
@@ -40,8 +40,6 @@ public abstract class BaseProtocolTest {
         } catch (ReflectiveOperationException e) {
             throw new AssertionError(e);
         }
-
-        ServerShim.install();
     }
 
     @Test

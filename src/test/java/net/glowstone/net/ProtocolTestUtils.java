@@ -1,11 +1,12 @@
 package net.glowstone.net;
 
+import com.google.gson.JsonObject;
 import net.glowstone.entity.meta.MetadataIndex;
 import net.glowstone.entity.meta.MetadataMap;
-import net.glowstone.util.TextMessage;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.TagType;
-import org.json.simple.JSONObject;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.Texts;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,14 +21,14 @@ public final class ProtocolTestUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getJson() {
-        JSONObject obj = new JSONObject();
-        obj.put("key", "value");
+    public static JsonObject getJson() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("key", "value");
         return obj;
     }
 
-    public static TextMessage getTextMessage() {
-        return new TextMessage("text");
+    public static Text getTextMessage() {
+        return Texts.of("text");
     }
 
     public static List<MetadataMap.Entry> getMetadataEntry() {
