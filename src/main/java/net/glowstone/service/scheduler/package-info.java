@@ -10,7 +10,7 @@
  * </ol>
  *
  * Whenever a thread wishes to call an event or perform other interactions with Bukkit API,
- * it calls the {@link net.glowstone.scheduler.GlowScheduler#syncIfNeeded(java.util.concurrent.Callable)}
+ * it calls the {@link net.glowstone.service.scheduler.GlowScheduler#syncIfNeeded(java.util.concurrent.Callable)}
  *
  * The scheduler thread.synchronizes the world threads, so that each world thread begins a tick at the beginning of a scheduler pulse
  *
@@ -22,4 +22,4 @@
  * --- Run in-tick tasks
  * --- await all worlds complete (in async task) ---
  */
-package net.glowstone.scheduler;
+package net.glowstone.service.scheduler;

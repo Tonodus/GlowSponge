@@ -1,4 +1,4 @@
-package net.glowstone.scheduler;
+package net.glowstone.service.scheduler;
 
 /**
  * Execution states for tasks

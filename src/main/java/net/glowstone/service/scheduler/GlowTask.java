@@ -1,10 +1,10 @@
-package net.glowstone.scheduler;
+package net.glowstone.service.scheduler;
 
 import net.glowstone.GlowServer;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scheduler.BukkitWorker;
+import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.service.scheduler.Task;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,42 +15,46 @@ import java.util.logging.Logger;
  * Represents a task which is executed periodically.
  * @author Graham Edgecombe
  */
-public class GlowTask extends FutureTask<Void> implements BukkitTask, BukkitWorker {
-
+public class GlowTask extends FutureTask<Void> implements Task, Runnable {
     /**
      * The next task ID pending.
      */
     private static final AtomicInteger nextTaskId = new AtomicInteger(0);
 
     /**
+     * The name of this task.
+     */
+    private final String name;
+
+    /**
      * The ID of this task.
      */
-    private final int taskId;
+    private final UUID uuid;
 
     /**
      * The Plugin that owns this task
      */
-    private final Plugin owner;
+    private final PluginContainer owner;
 
     /**
-     * The number of ticks before the call to the Runnable.
+     * The number of ticks or ms before the call to the Runnable.
      */
     private final long delay;
 
     /**
-     * The number of ticks between each call to the Runnable.
+     * The number of ticks or ms between each call to the Runnable.
      */
     private final long period;
 
     /**
-     * The current number of ticks since last initialization.
+     * The current number of ticks or ms since last initialization.
      */
     private long counter;
 
     /**
      * A flag indicating whether this task is to be run asynchronously
      */
-    private final boolean sync;
+    private final boolean async;
 
     /**
      * The thread this task has been last executed on, if this task is async.
@@ -61,34 +65,30 @@ public class GlowTask extends FutureTask<Void> implements BukkitTask, BukkitWork
      * Return the last state returned by {@link #shouldExecute()}
      */
     private volatile TaskExecutionState lastExecutionState = TaskExecutionState.WAIT;
-
-    /**
-     * A description of the runnable assigned to this task.
-     */
-    private final String description;
+    private Runnable runnable;
 
     /**
      * Creates a new task with the specified number of ticks between
      * consecutive calls to execute().
      */
-    public GlowTask(Plugin owner, Runnable task, boolean sync, long delay, long period) {
+    public GlowTask(PluginContainer owner, String name, Runnable task, boolean async, long delay, long period) {
         super(task, null);
-        this.taskId = nextTaskId.getAndIncrement();
-        this.description = task.toString();
+        this.uuid = UUID.nameUUIDFromBytes(("glowstone-task-" + nextTaskId.getAndIncrement()).getBytes());
+        this.name = name;
         this.owner = owner;
         this.delay = delay;
         this.period = period;
         this.counter = 0;
-        this.sync = sync;
+        this.async = async;
+        this.runnable = task;
     }
 
     @Override
     public String toString() {
         return "GlowTask{" +
-                "id=" + taskId +
+                "uid=" + uuid +
                 ", plugin=" + owner +
-                ", sync=" + sync +
-                ": " + description +
+                ", async=" + async +
                 '}';
     }
 
@@ -96,31 +96,38 @@ public class GlowTask extends FutureTask<Void> implements BukkitTask, BukkitWork
      * Gets the ID of this task.
      */
     @Override
-    public int getTaskId() {
-        return taskId;
+    public String getName() {
+        return name;
     }
 
     @Override
-    public boolean isSync() {
-        return sync;
-    }
-
-    @Override
-    public Plugin getOwner() {
+    public PluginContainer getOwner() {
         return owner;
     }
 
     @Override
-    public Thread getThread() {
-        return executionThread;
+    public long getDelay() {
+        return delay;
     }
 
-    /**
-     * Stops this task.
-     */
     @Override
-    public void cancel() {
-        this.cancel(false);
+    public long getInterval() {
+        return getInterval();
+    }
+
+    @Override
+    public boolean cancel() {
+        return super.cancel(false);
+    }
+
+    @Override
+    public Runnable getRunnable() {
+        return runnable;
+    }
+
+    @Override
+    public boolean isAsynchronous() {
+        return async;
     }
 
     /**
@@ -157,6 +164,11 @@ public class GlowTask extends FutureTask<Void> implements BukkitTask, BukkitWork
     }
 
     @Override
+    public UUID getUniqueId() {
+        return uuid;
+    }
+
+    @Override
     public void run() {
         executionThread = Thread.currentThread();
         if (period == -1) {
@@ -176,7 +188,8 @@ public class GlowTask extends FutureTask<Void> implements BukkitTask, BukkitWork
         try {
             get();
         } catch (ExecutionException ex) {
-            Logger log = owner == null ? GlowServer.logger : owner.getLogger();
+            //TODO: use plugin's logger
+            Logger log = GlowServer.logger;
             log.log(Level.SEVERE, "Error while executing " + this, ex.getCause());
         } catch (InterruptedException e) {
             // Task is already done, see the fact that we're in done() method

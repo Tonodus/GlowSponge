@@ -1,9 +1,8 @@
-package net.glowstone.scheduler;
+package net.glowstone.service.scheduler;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import net.glowstone.GlowServer;
-import net.glowstone.GlowWorld;
+import net.glowstone.world.GlowWorld;
 
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +78,7 @@ public class WorldScheduler {
 
     public GlowWorld getWorld(UUID uid) {
         for (WorldEntry went : worlds) {
-            if (went.world.getUID().equals(uid)) {
+            if (went.world.getUniqueId().equals(uid)) {
                 return went.world;
             }
         }
