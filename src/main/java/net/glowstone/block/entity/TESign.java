@@ -1,84 +1,71 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.state.GlowSign;
-import net.glowstone.entity.GlowPlayer;
-import net.glowstone.util.TextMessage;
+import net.glowstone.data.manipulator.tileentity.GlowSignData;
+import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.net.message.play.game.UpdateSignMessage;
+import net.glowstone.text.TextUtils;
 import net.glowstone.util.nbt.CompoundTag;
-import org.bukkit.Material;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.tileentity.Sign;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.data.manipulator.tileentity.SignData;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.Location;
 
-import java.util.Arrays;
+import java.util.List;
 
-public class TESign extends TileEntity {
-
-    private final TextMessage[] lines = new TextMessage[4];
-
-    public TESign(GlowBlock block) {
-        super(block);
+public class TESign extends GlowSingleDataTileEntity<SignData> implements Sign {
+    public TESign(Location block) {
+        super(block, SignData.class);
         setSaveId("Sign");
 
-        if (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST) {
-            throw new IllegalArgumentException("Sign must be WALL_SIGN or SIGN_POST, got " + block.getType());
+        if (block.getBlockType() != BlockTypes.WALL_SIGN && block.getBlockType() != BlockTypes.STANDING_SIGN) {
+            throw new IllegalArgumentException("Sign must be WALL_SIGN or SIGN_POST, got " + block.getBlockType());
         }
-
-        Arrays.fill(lines, new TextMessage(""));
     }
 
     @Override
     public void update(GlowPlayer player) {
-        player.sendSignChange(getBlock().getLocation(), lines);
+        if (getRawData() instanceof GlowSignData) {
+            player.getSession().send(new UpdateSignMessage(x, y, z, ((GlowSignData) getRawData()).getLineArr()));
+        } else {
+            List<Text> lines = getRawData().getLines();
+            player.getSession().send(new UpdateSignMessage(x, y, z, lines.toArray(new Text[lines.size()])));
+        }
     }
 
     @Override
     public void loadNbt(CompoundTag tag) {
         super.loadNbt(tag);
+        Text[] lines = new Text[4];
         for (int i = 0; i < lines.length; ++i) {
             String key = "Text" + (i + 1);
             if (tag.isString(key)) {
-                lines[i] = TextMessage.decode(tag.getString(key));
+                lines[i] = TextUtils.fromJSONStr(tag.getString(key));
             }
         }
+
+        ((GlowSignData)getRawData()).setLines(lines);
     }
 
     @Override
     public void saveNbt(CompoundTag tag) {
         super.saveNbt(tag);
-        for (int i = 0; i < lines.length; ++i) {
-            tag.putString("Text" + (i + 1), lines[i].encode());
+
+        List<Text> lines = getRawData().getLines();
+        for (int i = 0; i < lines.size(); ++i) {
+            tag.putString("Text" + (i + 1), TextUtils.toJSON(lines.get(i)).toString());
         }
     }
 
     @Override
-    public GlowBlockState getState() {
-        return new GlowSign(block);
+    public TileEntityType getType() {
+        return TileEntityTypes.SIGN;
     }
 
-    /**
-     * Set the lines of text on the sign.
-     * @param text The lines of text.
-     * @throws IllegalArgumentException If the wrong number of lines is provided.
-     */
-    public void setLines(String[] text) {
-        if (text.length != lines.length) {
-            throw new IllegalArgumentException("Provided lines were length " + text.length + ", must be " + lines.length);
-        }
-
-        for (int i = 0; i < lines.length; ++i) {
-            lines[i] = new TextMessage(text[i] == null ? "" : text[i]);
-        }
+    @Override
+    protected SignData createNew() {
+        return new GlowSignData();
     }
-
-    /**
-     * Get the lines of text on the sign.
-     * @return The sign's lines.
-     */
-    public String[] getLines() {
-        String[] result = new String[lines.length];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = lines[i].flatten();
-        }
-        return result;
-    }
-
 }

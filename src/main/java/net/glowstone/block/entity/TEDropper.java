@@ -1,20 +1,41 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.state.GlowDropper;
-import net.glowstone.inventory.GlowInventory;
-import org.bukkit.event.inventory.InventoryType;
+import net.glowstone.data.manipulator.item.GlowInventoryItemData;
+import net.glowstone.inventory.InventorySerializer;
+import net.glowstone.inventory.inventories.tileentity.DropperInventory;
+import net.glowstone.inventory.serializer.OrderedContentInventorySerializer;
+import net.glowstone.util.nbt.CompoundTag;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.block.tileentity.carrier.Dropper;
+import org.spongepowered.api.data.manipulator.item.InventoryItemData;
+import org.spongepowered.api.world.Location;
 
-public class TEDropper extends TEContainer {
+public class TEDropper extends TEContainer<DropperInventory, InventoryItemData> implements Dropper {
 
-    public TEDropper(GlowBlock block) {
-        super(block, new GlowInventory(new GlowDropper(block), InventoryType.DROPPER));
+    public TEDropper(Location block) {
+        super(block, InventoryItemData.class);
         setSaveId("Dropper");
     }
 
+
     @Override
-    public GlowBlockState getState() {
-        return new GlowDropper(block);
+    protected InventorySerializer<DropperInventory> getSerializer() {
+        return new OrderedContentInventorySerializer<DropperInventory>() {
+            @Override
+            protected DropperInventory create(CompoundTag tag) {
+                return new DropperInventory(TEDropper.this);
+            }
+        };
+    }
+
+    @Override
+    protected InventoryItemData createNew() {
+        return new GlowInventoryItemData(getInventory());
+    }
+
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.DROPPER;
     }
 }

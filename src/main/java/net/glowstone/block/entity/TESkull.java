@@ -1,31 +1,29 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.blocktype.BlockSkull;
-import net.glowstone.block.state.GlowSkull;
 import net.glowstone.constants.GlowBlockEntity;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.data.manipulator.tileentity.GlowSkullData;
 import net.glowstone.entity.meta.profile.PlayerProfile;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.util.nbt.CompoundTag;
-import org.bukkit.SkullType;
-import org.bukkit.material.Skull;
+import org.spongepowered.api.block.tileentity.Skull;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.data.manipulator.SkullData;
+import org.spongepowered.api.world.Location;
 
-public class TESkull extends TileEntity {
-
-    private byte type;
+public class TESkull extends GlowSingleDataTileEntity<SkullData> implements Skull {
     private byte rotation;
     private PlayerProfile owner;
 
-    public TESkull(GlowBlock block) {
-        super(block);
+    public TESkull(Location location) {
+        super(location, SkullData.class);
         setSaveId("Skull");
     }
 
     @Override
     public void loadNbt(CompoundTag tag) {
         super.loadNbt(tag);
-        type = tag.getByte("SkullType");
+       /* SkullType type = IdManagers.SKULL_TYPES.getById(tag.getByte("SkullType"));
 
         if (BlockSkull.canRotate((Skull) getBlock().getState().getData())) {
             rotation = tag.getByte("Rot");
@@ -39,24 +37,19 @@ public class TESkull extends TileEntity {
             if (name != null && !name.isEmpty()) {
                 owner = PlayerProfile.getProfile(name);
             }
-        }
+        }*/
     }
 
     @Override
     public void saveNbt(CompoundTag tag) {
         super.saveNbt(tag);
-        tag.putByte("SkullType", type);
+      /*  tag.putByte("SkullType", type);
         if (BlockSkull.canRotate((Skull) getBlock().getState().getData())) {
             tag.putByte("Rot", rotation);
         }
         if (type == BlockSkull.getType(SkullType.PLAYER) && owner != null) {
             tag.putCompound("Owner", owner.toNBT());
-        }
-    }
-
-    @Override
-    public GlowBlockState getState() {
-        return new GlowSkull(block);
+        }*/
     }
 
     @Override
@@ -64,31 +57,16 @@ public class TESkull extends TileEntity {
         super.update(player);
         CompoundTag nbt = new CompoundTag();
         saveNbt(nbt);
-        player.sendBlockEntityChange(getBlock().getLocation(), GlowBlockEntity.SKULL, nbt);
+        player.sendTileEntityChange(x, y, z, GlowBlockEntity.SKULL, nbt);
     }
 
-    public byte getType() {
-        return type;
+    @Override
+    protected SkullData createNew() {
+        return new GlowSkullData();
     }
 
-    public void setType(byte type) {
-        this.type = type;
-    }
-
-    public byte getRotation() {
-        return rotation;
-    }
-
-    public void setRotation(byte rotation) {
-        this.rotation = rotation;
-    }
-
-    public PlayerProfile getOwner() {
-        return owner;
-    }
-
-    public void setOwner(PlayerProfile owner) {
-        this.owner = owner;
-        this.type = BlockSkull.getType(SkullType.PLAYER);
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.SKULL;
     }
 }

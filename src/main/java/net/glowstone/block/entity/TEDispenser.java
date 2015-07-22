@@ -1,20 +1,52 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.state.GlowDispenser;
-import net.glowstone.inventory.GlowInventory;
-import org.bukkit.event.inventory.InventoryType;
+import com.flowpowered.math.vector.Vector3d;
+import net.glowstone.data.manipulator.item.GlowInventoryItemData;
+import net.glowstone.inventory.InventorySerializer;
+import net.glowstone.inventory.inventories.tileentity.DispenserInventory;
+import net.glowstone.inventory.serializer.OrderedContentInventorySerializer;
+import net.glowstone.util.nbt.CompoundTag;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.block.tileentity.carrier.Dispenser;
+import org.spongepowered.api.data.manipulator.item.InventoryItemData;
+import org.spongepowered.api.entity.projectile.Projectile;
+import org.spongepowered.api.world.Location;
 
-public class TEDispenser extends TEContainer {
+public class TEDispenser extends TEContainer<DispenserInventory, InventoryItemData> implements Dispenser {
 
-    public TEDispenser(GlowBlock block) {
-        super(block, new GlowInventory(new GlowDispenser(block), InventoryType.DISPENSER));
+    public TEDispenser(Location block) {
+        super(block, InventoryItemData.class);
         setSaveId("Trap");
     }
 
     @Override
-    public GlowBlockState getState() {
-        return new GlowDispenser(block);
+    public <T extends Projectile> T launchProjectile(Class<T> projectileClass) {
+        return null;
+    }
+
+    @Override
+    public <T extends Projectile> T launchProjectile(Class<T> projectileClass, Vector3d velocity) {
+        return null;
+    }
+
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.DISPENSER;
+    }
+
+    @Override
+    protected InventoryItemData createNew() {
+        return new GlowInventoryItemData(getInventory());
+    }
+
+    @Override
+    protected InventorySerializer<DispenserInventory> getSerializer() {
+        return new OrderedContentInventorySerializer<DispenserInventory>() {
+            @Override
+            protected DispenserInventory create(CompoundTag tag) {
+                return new DispenserInventory(TEDispenser.this);
+            }
+        };
     }
 }

@@ -1,20 +1,22 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.state.GlowCreatureSpawner;
+import net.glowstone.data.manipulator.GlowMobSpawnerData;
+import net.glowstone.id.IdManagers;
 import net.glowstone.util.nbt.CompoundTag;
-import org.bukkit.entity.EntityType;
+import org.spongepowered.api.block.tileentity.MobSpawner;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.data.manipulator.MobSpawnerData;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.util.weighted.WeightedEntity;
+import org.spongepowered.api.world.Location;
 
-public class TEMobSpawner extends TileEntity {
+public class TEMobSpawner extends GlowSingleDataTileEntity<MobSpawnerData> implements MobSpawner {
+    private static final EntityType DEFAULT = EntityTypes.PIG;
 
-    private static final EntityType DEFAULT = EntityType.PIG;
-
-    private EntityType spawning;
-    private int delay;
-
-    public TEMobSpawner(GlowBlock block) {
-        super(block);
+    public TEMobSpawner(Location block) {
+        super(block, MobSpawnerData.class);
         setSaveId("MobSpawner");
     }
 
@@ -22,47 +24,41 @@ public class TEMobSpawner extends TileEntity {
     public void loadNbt(CompoundTag tag) {
         super.loadNbt(tag);
 
+        EntityType spawning = DEFAULT;
         if (tag.isString("EntityId")) {
-            spawning = EntityType.fromName(tag.getString("EntityId"));
+            spawning = IdManagers.ENTITY_TYPES.getById(tag.getString("EntityId"));
             if (spawning == null) {
                 spawning = DEFAULT;
             }
-        } else {
-            spawning = DEFAULT;
         }
 
+        int delay = 0;
         if (tag.isInt("Delay")) {
             delay = tag.getInt("Delay");
-        } else {
-            delay = 0;
         }
+
+        getRawData().setNextEntityToSpawn(new WeightedEntity(spawning, 1)).setRemainingDelay((short) delay);
     }
 
     @Override
     public void saveNbt(CompoundTag tag) {
         super.saveNbt(tag);
-        tag.putString("EntityId", spawning == null ? "" : spawning.getName());
-        tag.putInt("Delay", delay);
+        /*tag.putString("EntityId", spawning == null ? "" : spawning.getName());
+        tag.putInt("Delay", delay);*/
     }
 
     @Override
-    public GlowBlockState getState() {
-        return new GlowCreatureSpawner(block);
+    protected MobSpawnerData createNew() {
+        return new GlowMobSpawnerData();
     }
 
-    public EntityType getSpawning() {
-        return spawning;
+    @Override
+    public void spawnEntityBatchImmediately(boolean force) {
+
     }
 
-    public void setSpawning(EntityType spawning) {
-        this.spawning = spawning;
-    }
-
-    public int getDelay() {
-        return delay;
-    }
-
-    public void setDelay(int delay) {
-        this.delay = delay;
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.MOB_SPAWNER;
     }
 }

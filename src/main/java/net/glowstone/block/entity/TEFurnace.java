@@ -1,57 +1,64 @@
 package net.glowstone.block.entity;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.GlowBlockState;
-import net.glowstone.block.state.GlowFurnace;
-import net.glowstone.inventory.GlowFurnaceInventory;
+import net.glowstone.data.manipulator.tileentity.GlowFurnaceData;
+import net.glowstone.inventory.InventorySerializer;
+import net.glowstone.inventory.inventories.tileentity.FurnaceInventory;
+import net.glowstone.inventory.serializer.OrderedContentInventorySerializer;
 import net.glowstone.util.nbt.CompoundTag;
+import org.spongepowered.api.block.tileentity.TileEntityType;
+import org.spongepowered.api.block.tileentity.TileEntityTypes;
+import org.spongepowered.api.block.tileentity.carrier.Furnace;
+import org.spongepowered.api.data.manipulator.tileentity.FurnaceData;
+import org.spongepowered.api.world.Location;
 
-public class TEFurnace extends TEContainer {
-
-    private short burnTime = 0;
-    private short cookTime = 0;
-
-    public TEFurnace(GlowBlock block) {
-        super(block, new GlowFurnaceInventory(new GlowFurnace(block, (short) 0, (short) 0)));
+public class TEFurnace extends TEContainer<FurnaceInventory, FurnaceData> implements Furnace {
+    public TEFurnace(Location block) {
+        super(block, FurnaceData.class);
         setSaveId("Furnace");
     }
 
-    @Override
-    public GlowBlockState getState() {
-        return new GlowFurnace(block);
-    }
 
     @Override
     public void saveNbt(CompoundTag tag) {
         super.saveNbt(tag);
-        tag.putShort("BurnTime", burnTime);
-        tag.putShort("CookTime", cookTime);
+        tag.putShort("BurnTime", getRawData().getRemainingBurnTime());
+        tag.putShort("CookTime", getRawData().getRemainingCookTime());
+    }
+
+    @Override
+    protected InventorySerializer<FurnaceInventory> getSerializer() {
+        return new OrderedContentInventorySerializer<FurnaceInventory>() {
+            @Override
+            protected FurnaceInventory create(CompoundTag tag) {
+                return new FurnaceInventory(TEFurnace.this);
+            }
+        };
     }
 
     @Override
     public void loadNbt(CompoundTag tag) {
         super.loadNbt(tag);
         if (tag.isShort("BurnTime")) {
-            burnTime = tag.getShort("BurnTime");
+            getRawData().setRemainingBurnTime(tag.getShort("BurnTime"));
         }
         if (tag.isShort("CookTime")) {
-            cookTime = tag.getShort("CookTime");
+            getRawData().setRemainingCookTime(tag.getShort("CookTime"));
         }
     }
 
-    public short getBurnTime() {
-        return burnTime;
+
+    @Override
+    public boolean smelt() {
+        return false;
     }
 
-    public void setBurnTime(short burnTime) {
-        this.burnTime = burnTime;
+    @Override
+    protected FurnaceData createNew() {
+        return new GlowFurnaceData();
     }
 
-    public short getCookTime() {
-        return cookTime;
-    }
-
-    public void setCookTime(short cookTime) {
-        this.cookTime = cookTime;
+    @Override
+    public TileEntityType getType() {
+        return TileEntityTypes.FURNACE;
     }
 }
