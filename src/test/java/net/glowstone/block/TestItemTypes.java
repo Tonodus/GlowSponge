@@ -1,7 +1,7 @@
 package net.glowstone.block;
 
 import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.block.itemtype.ItemType;
+import net.glowstone.item.behavior.BaseItemBehavior;
 import net.glowstone.testutils.ParameterUtils;
 import org.bukkit.Material;
 import org.junit.BeforeClass;
@@ -39,7 +39,7 @@ public class TestItemTypes {
 
     @Test
     public void hasAllMaterials() {
-        ItemType type = table.getItem(material);
+        BaseItemBehavior type = table.getItem(material);
 
         // special cases
         if (material == Material.AIR) {

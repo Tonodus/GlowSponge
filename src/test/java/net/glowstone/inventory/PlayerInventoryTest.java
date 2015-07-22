@@ -1,5 +1,6 @@
 package net.glowstone.inventory;
 
+import net.glowstone.inventory.inventories.GlowPlayerInventory;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;

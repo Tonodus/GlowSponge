@@ -1,5 +1,6 @@
 package net.glowstone.constants;
 
+import net.glowstone.item.GlowEnchantment;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentWrapper;
 import org.junit.BeforeClass;

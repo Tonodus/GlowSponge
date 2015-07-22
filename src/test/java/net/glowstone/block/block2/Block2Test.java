@@ -1,5 +1,6 @@
 package net.glowstone.block.block2;
 
+import net.glowstone.block.BlockRegistry;
 import net.glowstone.block.block2.sponge.BlockState;
 import net.glowstone.block.block2.sponge.BlockType;
 import org.bukkit.StoneType;
