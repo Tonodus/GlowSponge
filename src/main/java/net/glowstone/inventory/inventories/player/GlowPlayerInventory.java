@@ -10,16 +10,14 @@ import org.spongepowered.api.item.inventory.entity.HumanInventory;
 
 public class GlowPlayerInventory extends GlowBaseInventory<GlowInventory> implements HumanInventory {
     private final GlowArmorInventory armorInventory;
-    private final GlowPlayerRestInventory restInventory;
-    private final GlowHotbar hotbar;
+    private final GlowPlayerMainInventory mainInventory;
     private final GlowPlayer player;
 
     public GlowPlayerInventory(GlowPlayer player) {
         super(null);
         this.player = player;
         armorInventory = new GlowArmorInventory(this);
-        restInventory = new GlowPlayerRestInventory(this);
-        hotbar = new GlowHotbar(this);
+        mainInventory = new GlowPlayerMainInventory(this);
     }
 
 
@@ -27,14 +25,13 @@ public class GlowPlayerInventory extends GlowBaseInventory<GlowInventory> implem
     protected GlowInventory[] getChildren() {
         return new GlowInventory[]{
                 armorInventory,
-                hotbar,
-                restInventory
+                mainInventory
         };
     }
 
     @Override
     public Hotbar getHotbar() {
-        return hotbar;
+        return mainInventory.getHotbar();
     }
 
     @Override

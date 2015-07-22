@@ -6,7 +6,7 @@ import org.spongepowered.api.item.inventory.entity.Hotbar;
 public class GlowHotbar extends GlowGridInventory implements Hotbar {
     private int selectedSlot;
 
-    public GlowHotbar(GlowPlayerInventory parent) {
+    public GlowHotbar(GlowPlayerMainInventory parent) {
         super(parent, 9, 1);
     }
 
