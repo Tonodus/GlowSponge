@@ -1,5 +1,6 @@
 package net.glowstone.block.stateresolver;
 
+import net.glowstone.block.GlowBlockType;
 import net.glowstone.data.manipulator.GlowDataManipulator;
 import net.glowstone.data.manipulator.block.GlowDirtData;
 import org.spongepowered.api.block.BlockTypes;
@@ -9,7 +10,7 @@ import org.spongepowered.api.data.type.DirtTypes;
 
 public class DirtStateResolver extends SingleDataStateResolver<DirtData, DirtType> {
     public DirtStateResolver() {
-        super(BlockTypes.DIRT, DirtData.class, new GlowDirtData().setValue(DirtTypes.DIRT));
+        super(DirtData.class, DirtTypes.DIRT);
     }
 
     @Override
@@ -24,5 +25,10 @@ public class DirtStateResolver extends SingleDataStateResolver<DirtData, DirtTyp
     @Override
     protected GlowDataManipulator<DirtData> create(DirtType type) {
         return new GlowDirtData(type);
+    }
+
+    @Override
+    protected GlowBlockType getBlockType(DirtType type) {
+        return BlockTypes.DIRT;
     }
 }

@@ -3,7 +3,6 @@ package net.glowstone.block;
 import com.google.common.base.Optional;
 import net.glowstone.GlowCatalogType;
 import net.glowstone.block.stateresolver.StateResolver;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.DataManipulator;
 import org.spongepowered.api.item.ItemBlock;
@@ -31,20 +30,36 @@ public final class GlowBlockType extends GlowCatalogType implements BlockType {
     }
 
     @Override
-    public BlockState getDefaultState() {
-        return resolver.getDefaultState();
+    public GlowBlockState getDefaultState() {
+        if (resolver != null) {
+            return resolver.getDefaultState();
+        } else {
+            return new GlowBlockState(this);
+        }
     }
 
     public boolean hasTypeOfData(Class<? extends DataManipulator<?>> dataClass) {
-        return resolver.accepts(dataClass);
+        if (resolver != null) {
+            return resolver.accepts(dataClass);
+        } else {
+            return false;
+        }
     }
 
     public byte getDataValueFromState(GlowBlockState state) {
-        return resolver.getDataValueFromState(state);
+        if (resolver != null) {
+            return resolver.getDataValueFromState(state);
+        } else {
+            return 0;
+        }
     }
 
     public GlowBlockState getStateFromDataValue(byte data) {
-        return resolver.getStateFromDataValue(data);
+        if (resolver != null) {
+            return resolver.getStateFromDataValue(data);
+        } else {
+            return getDefaultState();
+        }
     }
 
     @Override

@@ -24,14 +24,13 @@
  */
 package org.spongepowered.api.block;
 
-import net.glowstone.block.BlockTypeBuilder;
+import net.glowstone.block.BlockBehavior;
 import net.glowstone.block.GlowBlockType;
-import net.glowstone.block.behavior.DirtDrops;
-import net.glowstone.block.behavior.StoneDrops;
-import net.glowstone.block.stateresolver.DirtStateResolver;
-import net.glowstone.block.stateresolver.StoneStateResolver;
-import org.spongepowered.api.data.manipulator.block.DirtData;
-import org.spongepowered.api.data.manipulator.block.StoneData;
+import net.glowstone.block.behavior.*;
+import net.glowstone.block.stateresolver.*;
+import org.spongepowered.api.item.ItemTypes;
+
+import java.util.Arrays;
 
 /**
  * An enumeration of all possible {@link BlockType}s in vanilla minecraft.
@@ -40,13 +39,13 @@ public final class BlockTypes {
 
     // These values will not be null at runtime
 
-    public static final GlowBlockType AIR = of("air", 0).register();
-    public static final GlowBlockType STONE = of("stone", 1).behavior(new StoneDrops()).stateResolver(new StoneStateResolver()).register();
-    public static final GlowBlockType GRASS = of("grass", 2).register();
-    public static final GlowBlockType DIRT = of("dirt", 3).behavior(new DirtDrops()).stateResolver(new DirtStateResolver()).register();
-    public static final GlowBlockType COBBLESTONE = null;
-    public static final GlowBlockType PLANKS = null;
-    public static final GlowBlockType SAPLING = null;
+    public static final GlowBlockType AIR = of("air", 0);
+    public static final GlowBlockType STONE = of("stone", 1, new StoneStateResolver(), new StoneDrops());
+    public static final GlowBlockType GRASS = of("grass", 2, new DirectDrops(ItemTypes.DIRT));
+    public static final GlowBlockType DIRT = of("dirt", 3, new DirtStateResolver(), new DirtDrops());
+    public static final GlowBlockType COBBLESTONE = of("cobblestone", 4);
+    public static final GlowBlockType PLANKS = of("planks", 5, new PlanksResolver());
+    public static final GlowBlockType SAPLING = of("sapling", 6, new SaplingResolver());
     public static final GlowBlockType BEDROCK = null;
     public static final GlowBlockType FLOWING_WATER = null;
     public static final GlowBlockType WATER = null;
@@ -57,10 +56,10 @@ public final class BlockTypes {
     public static final GlowBlockType GOLD_ORE = null;
     public static final GlowBlockType IRON_ORE = null;
     public static final GlowBlockType COAL_ORE = null;
-    public static final GlowBlockType LOG = null;
-    public static final GlowBlockType LOG2 = null;
-    public static final GlowBlockType LEAVES = null;
-    public static final GlowBlockType LEAVES2 = null;
+    public static final GlowBlockType LOG = of("log", 17, new LogsResolver());
+    public static final GlowBlockType LOG2 = of("log2", 162, new LogsResolver());
+    public static final GlowBlockType LEAVES = of("leaves", 18, new LeavesResolver(), new LeavesDrops());
+    public static final GlowBlockType LEAVES2 = of("leaves2", 161, new LeavesResolver(), new LeavesDrops());
     public static final GlowBlockType SPONGE = null;
     public static final GlowBlockType GLASS = null;
     public static final GlowBlockType LAPIS_ORE = null;
@@ -242,8 +241,22 @@ public final class BlockTypes {
     private BlockTypes() {
     }
 
-    private static BlockTypeBuilder of(String name, int oldId) {
-        return new BlockTypeBuilder(name).oldId(oldId);
+    private static GlowBlockType of(String name, int oldId) {
+        return of(name, oldId, null, null);
+    }
+
+    private static GlowBlockType of(String name, int oldId, BlockBehavior... behaviors) {
+        return of(name, oldId, null, behaviors);
+    }
+
+    private static GlowBlockType of(String name, int oldId, StateResolver resolver, BlockBehavior... behaviors) {
+        if (behaviors != null && behaviors.length > 1) {
+            return new GlowBlockType(name, "minecraft:" + name, oldId, new ListBlockBehavior(Arrays.asList(behaviors)), resolver);
+        } else if (behaviors != null && behaviors.length == 1) {
+            return new GlowBlockType(name, "minecraft:" + name, oldId, behaviors[0], resolver);
+        } else {
+            return new GlowBlockType(name, "minecraft:" + name, oldId, DefaultBlockBehavior.INSTANCE, resolver);
+        }
     }
 
     public static void init() {

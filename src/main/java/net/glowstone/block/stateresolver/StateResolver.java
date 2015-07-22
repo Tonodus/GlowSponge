@@ -1,11 +1,11 @@
 package net.glowstone.block.stateresolver;
 
 import net.glowstone.block.GlowBlockState;
-import org.spongepowered.api.block.BlockState;
+import net.glowstone.block.GlowBlockType;
 import org.spongepowered.api.data.DataManipulator;
 
 public interface StateResolver {
-    BlockState getDefaultState();
+    GlowBlockState getDefaultState();
 
     boolean accepts(Class<? extends DataManipulator<?>> dataClass);
 
