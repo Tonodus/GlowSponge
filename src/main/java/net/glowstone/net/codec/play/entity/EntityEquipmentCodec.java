@@ -5,7 +5,7 @@ import com.flowpowered.networking.util.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import net.glowstone.net.GlowBufUtils;
 import net.glowstone.net.message.play.entity.EntityEquipmentMessage;
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.io.IOException;
 

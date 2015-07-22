@@ -11,7 +11,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.CodecException;
 import net.glowstone.EventFactory;
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.entity.meta.profile.PlayerProfile;
 import net.glowstone.io.PlayerDataService;
 import net.glowstone.net.message.KickMessage;

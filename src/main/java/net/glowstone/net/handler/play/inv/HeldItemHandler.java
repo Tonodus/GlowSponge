@@ -2,7 +2,7 @@ package net.glowstone.net.handler.play.inv;
 
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.inv.HeldItemMessage;
 import org.bukkit.event.player.PlayerItemHeldEvent;

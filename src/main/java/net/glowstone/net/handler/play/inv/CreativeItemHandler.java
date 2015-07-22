@@ -1,11 +1,13 @@
 package net.glowstone.net.handler.play.inv;
 
 import com.flowpowered.networking.MessageHandler;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.inventory.GlowInventoryView;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.inv.CreativeItemMessage;
-import org.bukkit.GameMode;
+import org.spongepowered.api.entity.player.gamemode.GameModes;
+import org.spongepowered.api.item.inventory.property.SlotIndex;
+import org.spongepowered.api.text.Texts;
 
 public final class CreativeItemHandler implements MessageHandler<GlowSession, CreativeItemMessage> {
     @Override
@@ -13,14 +15,14 @@ public final class CreativeItemHandler implements MessageHandler<GlowSession, Cr
         final GlowPlayer player = session.getPlayer();
 
         // only if creative mode
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            player.kickPlayer("Illegal creative mode item selection");
+        if (player.getGameMode() != GameModes.CREATIVE) {
+            player.kick("Illegal creative mode item selection");
             return;
         }
 
         // only if default (player) inventory
         if (!GlowInventoryView.isDefault(player.getOpenInventory())) {
-            player.kickPlayer("Illegal creative mode item selection");
+            player.kick("Illegal creative mode item selection");
             return;
         }
 
@@ -33,6 +35,6 @@ public final class CreativeItemHandler implements MessageHandler<GlowSession, Cr
         // todo: filter item for validity
 
         // in the creative inventory everything is handled client side
-        player.getOpenInventory().setItem(message.getSlot(), message.getItem());
+        player.getOpenInventory().set(message.getSlot(), message.getItem());
     }
 }

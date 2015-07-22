@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import org.bukkit.plugin.Plugin;
 
 import java.nio.ByteOrder;

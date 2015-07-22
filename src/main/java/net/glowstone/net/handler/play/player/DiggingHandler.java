@@ -2,11 +2,9 @@ package net.glowstone.net.handler.play.player;
 
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
-import net.glowstone.GlowWorld;
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.entity.objects.GlowItem;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.DiggingMessage;
@@ -26,8 +24,8 @@ public final class DiggingHandler implements MessageHandler<GlowSession, Digging
     @Override
     public void handle(GlowSession session, DiggingMessage message) {
         final GlowPlayer player = session.getPlayer();
-        GlowWorld world = player.getWorld();
-        GlowBlock block = world.getBlockAt(message.getX(), message.getY(), message.getZ());
+        BukkitWorld world = player.getWorld();
+        BukkitBlock block = world.getBlockAt(message.getX(), message.getY(), message.getZ());
         BlockFace face = BlockPlacementHandler.convertFace(message.getFace());
         ItemStack holding = player.getItemInHand();
 

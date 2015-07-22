@@ -2,6 +2,7 @@ package net.glowstone.net.handler.play.player;
 
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
+import net.glowstone.event.entity.GlowPlayerMoveEvent;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.game.PositionRotationMessage;
 import net.glowstone.net.message.play.player.PlayerUpdateMessage;
@@ -26,7 +27,7 @@ public final class PlayerUpdateHandler implements MessageHandler<GlowSession, Pl
 
         // call move event if movement actually occurred and there are handlers registered
         if (!oldLocation.equals(newLocation) && PlayerMoveEvent.getHandlerList().getRegisteredListeners().length > 0) {
-            final PlayerMoveEvent event = EventFactory.callEvent(new PlayerMoveEvent(session.getPlayer(), oldLocation, newLocation));
+            final PlayerMoveEvent event = new GlowPlayerMoveEvent();
             if (event.isCancelled()) {
                 // tell client they're back where they started
                 session.send(new PositionRotationMessage(oldLocation));

@@ -5,7 +5,7 @@ import net.glowstone.GlowServer;
 import net.glowstone.constants.AttackDamage;
 import net.glowstone.entity.GlowEntity;
 import net.glowstone.entity.GlowLivingEntity;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.InteractEntityMessage;
 import org.bukkit.GameMode;

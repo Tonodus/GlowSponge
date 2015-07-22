@@ -2,12 +2,11 @@ package net.glowstone.net.handler.play.player;
 
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
-import net.glowstone.block.GlowBlock;
 import net.glowstone.block.ItemTable;
 import net.glowstone.block.blocktype.BlockType;
-import net.glowstone.block.entity.TileEntity;
-import net.glowstone.block.itemtype.ItemType;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.block.entity.GlowTileEntity;
+import net.glowstone.item.behavior.BaseItemBehavior;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.player.BlockPlacementMessage;
 import org.bukkit.Material;
@@ -50,7 +49,7 @@ public final class BlockPlacementHandler implements MessageHandler<GlowSession, 
          */
 
         Action action = Action.RIGHT_CLICK_BLOCK;
-        GlowBlock clicked = player.getWorld().getBlockAt(message.getX(), message.getY(), message.getZ());
+        BukkitBlock clicked = player.getWorld().getBlockAt(message.getX(), message.getY(), message.getZ());
 
         /**
          * Check if the message is a -1. If we *just* got a message with the
@@ -109,7 +108,7 @@ public final class BlockPlacementHandler implements MessageHandler<GlowSession, 
         // follows ALLOW/DENY: default to if no block was interacted with
         if (selectResult(event.useItemInHand(), !useInteractedBlock) && holding != null) {
             // call out to the item type to determine the appropriate right-click action
-            ItemType type = ItemTable.instance().getItem(holding.getType());
+            BaseItemBehavior type = ItemTable.instance().getItem(holding.getType());
             if (clicked == null) {
                 type.rightClickAir(player, holding);
             } else {
@@ -141,9 +140,9 @@ public final class BlockPlacementHandler implements MessageHandler<GlowSession, 
         return result == Event.Result.DEFAULT ? def : result == Event.Result.ALLOW;
     }
 
-    static void revert(GlowPlayer player, GlowBlock target) {
+    static void revert(GlowPlayer player, BukkitBlock target) {
         player.sendBlockChange(target.getLocation(), target.getType(), target.getData());
-        TileEntity entity = target.getTileEntity();
+        GlowTileEntity entity = target.getTileEntity();
         if (entity != null) {
             entity.update(player);
         }

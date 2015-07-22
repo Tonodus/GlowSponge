@@ -3,9 +3,9 @@ package net.glowstone.net.handler.play.inv;
 import com.flowpowered.networking.MessageHandler;
 import net.glowstone.EventFactory;
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.inventory.DragTracker;
-import net.glowstone.inventory.GlowInventory;
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import net.glowstone.inventory.GlowInventoryView;
 import net.glowstone.inventory.WindowClickLogic;
 import net.glowstone.net.GlowSession;
@@ -56,11 +56,11 @@ public final class WindowClickHandler implements MessageHandler<GlowSession, Win
         // todo: attempt to allow for users to implement their own inventory?
         // CraftBukkit does not allow this but it may be worth the trouble for
         // the extensibility.
-        final GlowInventory inv;
+        final GlowTopInventory inv;
         if (viewSlot < view.getTopInventory().getSize()) {
-            inv = (GlowInventory) view.getTopInventory();
+            inv = (GlowTopInventory) view.getTopInventory();
         } else {
-            inv = (GlowInventory) view.getBottomInventory();
+            inv = (GlowTopInventory) view.getBottomInventory();
         }
         final int invSlot = view.convertSlot(viewSlot);
         final InventoryType.SlotType slotType = inv.getSlotType(invSlot);
@@ -357,7 +357,7 @@ public final class WindowClickHandler implements MessageHandler<GlowSession, Win
         }
     }
 
-    private ItemStack shiftClick(ItemStack stack, GlowInventory target, int start, int end) {
+    private ItemStack shiftClick(ItemStack stack, GlowTopInventory target, int start, int end) {
         if (stack == null) return null;
 
         int delta = (end < start) ? -1 : 1;

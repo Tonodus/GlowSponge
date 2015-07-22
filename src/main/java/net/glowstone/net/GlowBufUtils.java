@@ -1,21 +1,24 @@
 package net.glowstone.net;
 
+import com.flowpowered.math.vector.Vector3l;
 import com.flowpowered.networking.util.ByteBufUtils;
+import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import net.glowstone.GlowServer;
+import net.glowstone.util.MutableVector;
 import net.glowstone.entity.meta.MetadataIndex;
 import net.glowstone.entity.meta.MetadataMap;
 import net.glowstone.entity.meta.MetadataType;
-import net.glowstone.inventory.GlowItemFactory;
-import net.glowstone.util.TextMessage;
+import net.glowstone.id.ItemIdManager;
+import net.glowstone.item.ItemHelper;
+import net.glowstone.text.TextUtils;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.NBTInputStream;
 import net.glowstone.util.nbt.NBTOutputStream;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.BlockVector;
-import org.bukkit.util.Vector;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.text.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,7 +40,7 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @return The metadata.
      */
-    public static List<MetadataMap.Entry> readMetadata(ByteBuf buf) throws IOException {
+    public static List<MetadataMap.Entry> readMetadata(ByteBuf buf, ItemIdManager idManager) throws IOException {
         List<MetadataMap.Entry> entries = new ArrayList<>();
         byte item;
         while ((item = buf.readByte()) != 0x7F) {
@@ -62,7 +65,7 @@ public final class GlowBufUtils {
                     entries.add(new MetadataMap.Entry(index, ByteBufUtils.readUTF8(buf)));
                     break;
                 case ITEM:
-                    entries.add(new MetadataMap.Entry(index, readSlot(buf)));
+                    entries.add(new MetadataMap.Entry(index, readSlot(buf, idManager)));
                     break;
             }
         }
@@ -74,7 +77,7 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @param entries The metadata.
      */
-    public static void writeMetadata(ByteBuf buf, List<MetadataMap.Entry> entries) throws IOException {
+    public static void writeMetadata(ByteBuf buf, List<MetadataMap.Entry> entries, ItemIdManager idManager) throws IOException {
         for (MetadataMap.Entry entry : entries) {
             MetadataIndex index = entry.index;
             Object value = entry.value;
@@ -102,7 +105,7 @@ public final class GlowBufUtils {
                     ByteBufUtils.writeUTF8(buf, (String) value);
                     break;
                 case ITEM:
-                    writeSlot(buf, (ItemStack) value);
+                    writeSlot(buf, (ItemStack) value, idManager);
                     break;
             }
         }
@@ -156,7 +159,7 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @return The stack read, or null.
      */
-    public static ItemStack readSlot(ByteBuf buf) {
+    public static ItemStack readSlot(ByteBuf buf, ItemIdManager idManager) {
         short type = buf.readShort();
         if (type == -1) {
             return null;
@@ -165,14 +168,13 @@ public final class GlowBufUtils {
         int amount = buf.readUnsignedByte();
         short durability = buf.readShort();
 
-        Material material = Material.getMaterial(type);
+        ItemType material = idManager.getItemTypeById(type, durability);
         if (material == null) {
             return null;
         }
 
         CompoundTag tag = readCompound(buf);
-        ItemStack stack = new ItemStack(material, amount, durability);
-        stack.setItemMeta(GlowItemFactory.instance().readNbt(material, tag));
+        ItemStack stack = ItemHelper.buildFromOld(material, amount, durability, tag);
         return stack;
     }
 
@@ -181,20 +183,23 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @param stack The stack to write, or null.
      */
-    public static void writeSlot(ByteBuf buf, ItemStack stack) {
-        if (stack == null || stack.getTypeId() == 0) {
+    public static void writeSlot(ByteBuf buf, ItemStack stack, ItemIdManager idManager) {
+        if (stack == null || stack.getItem() == null) {
             buf.writeShort(-1);
         } else {
-            buf.writeShort(stack.getTypeId());
-            buf.writeByte(stack.getAmount());
-            buf.writeShort(stack.getDurability());
+            buf.writeShort(idManager.getItemId(stack));
+            buf.writeByte(stack.getQuantity());
+            buf.writeShort(0); //TODO: itemstack data stack.getData());
 
+
+            /*
+            TODO: itemmeta
             if (stack.hasItemMeta()) {
                 CompoundTag tag = GlowItemFactory.instance().writeNbt(stack.getItemMeta());
                 writeCompound(buf, tag);
             } else {
                 writeCompound(buf, null);
-            }
+            }*/
         }
     }
 
@@ -203,13 +208,13 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @return The vector read.
      */
-    public static BlockVector readBlockPosition(ByteBuf buf) {
+    public static MutableVector readBlockPosition(ByteBuf buf) {
         long val = buf.readLong();
         long x = (val >> 38); // signed
         long y = (val >> 26) & 0xfff; // unsigned
         // this shifting madness is used to preserve sign
         long z = (val << 38) >> 38; // signed
-        return new BlockVector((double) x, y, z);
+        return new MutableVector(x, y, z);
     }
 
     /**
@@ -217,8 +222,8 @@ public final class GlowBufUtils {
      * @param buf The buffer.
      * @param vector The vector to write.
      */
-    public static void writeBlockPosition(ByteBuf buf, Vector vector) {
-        writeBlockPosition(buf, vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+    public static void writeBlockPosition(ByteBuf buf, Vector3l vector) {
+        writeBlockPosition(buf, vector.getX(), vector.getY(), vector.getZ());
     }
 
     /**
@@ -257,8 +262,8 @@ public final class GlowBufUtils {
      * @return The chat message read.
      * @throws IOException on read failure.
      */
-    public static TextMessage readChat(ByteBuf buf) throws IOException {
-        return TextMessage.decode(ByteBufUtils.readUTF8(buf));
+    public static Text readChat(ByteBuf buf) throws IOException {
+        return TextUtils.fromJSONStr(ByteBufUtils.readUTF8(buf));
     }
 
     /**
@@ -267,8 +272,8 @@ public final class GlowBufUtils {
      * @param text The chat message to write.
      * @throws IOException on write failure.
      */
-    public static void writeChat(ByteBuf buf, TextMessage text) throws IOException {
-        ByteBufUtils.writeUTF8(buf, text.encode());
+    public static void writeChat(ByteBuf buf, JsonObject text) throws IOException {
+        ByteBufUtils.writeUTF8(buf, text.toString());
     }
 
 }

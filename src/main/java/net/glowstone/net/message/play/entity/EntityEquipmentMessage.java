@@ -2,7 +2,7 @@ package net.glowstone.net.message.play.entity;
 
 import com.flowpowered.networking.Message;
 import lombok.Data;
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 @Data
 public final class EntityEquipmentMessage implements Message {

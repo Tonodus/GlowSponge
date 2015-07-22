@@ -1,13 +1,18 @@
 package net.glowstone.net.handler.play.game;
 
 import com.flowpowered.networking.MessageHandler;
+import com.google.common.base.Optional;
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.block.entity.TESign;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.game.UpdateSignMessage;
-import org.bukkit.Location;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
+import net.glowstone.text.TextUtils;
+import org.spongepowered.api.block.tileentity.Sign;
+import org.spongepowered.api.block.tileentity.TileEntity;
+import org.spongepowered.api.data.manipulator.tileentity.SignData;
+import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.world.Location;
 
 public final class UpdateSignHandler implements MessageHandler<GlowSession, UpdateSignMessage> {
     @Override
@@ -17,19 +22,21 @@ public final class UpdateSignHandler implements MessageHandler<GlowSession, Upda
         // filter out json messages that aren't plaintext
         String[] lines = new String[4];
         for (int i = 0; i < lines.length; ++i) {
-            lines[i] = message.getMessage()[i].asPlaintext();
+            lines[i] = TextUtils.strip(message.getMessage()[i]);
         }
 
         Location location = new Location(player.getWorld(), message.getX(), message.getY(), message.getZ());
         if (player.checkSignLocation(location)) {
             // update the sign if it's actually still there
-            BlockState state = location.getBlock().getState();
-            if (state instanceof Sign) {
-                Sign sign = (Sign) state;
-                for (int i = 0; i < lines.length; ++i) {
-                    sign.setLine(i, lines[i]);
+            Optional<TileEntity> te = location.getTileEntity();
+            if (te.isPresent() && te.get() instanceof Sign) {
+                TESign sign = (TESign) te.get();
+                SignData data = sign.getOrCreate(SignData.class).get();
+                for (int i = 0; i < lines.length; i++) {
+                    data.setLine(i, Texts.of(lines[i]));
                 }
-                sign.update();
+                sign.offer(data);
+                sign.updateInRange();
             }
         } else {
             // player shouldn't be editing this sign

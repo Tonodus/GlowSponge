@@ -6,10 +6,12 @@ import net.glowstone.GlowServer;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.status.StatusRequestMessage;
 import net.glowstone.net.message.status.StatusResponseMessage;
+import net.glowstone.status.GlowFavicon;
 import net.glowstone.util.GlowServerIcon;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.util.CachedServerIcon;
 import org.json.simple.JSONObject;
+import org.spongepowered.api.event.server.StatusPingEvent;
 
 import java.net.InetAddress;
 
@@ -52,9 +54,9 @@ public final class StatusRequestHandler implements MessageHandler<GlowSession, S
         session.send(new StatusResponseMessage(json));
     }
 
-    private static class StatusEvent extends ServerListPingEvent {
+    private static class StatusEvent implements StatusPingEvent {
 
-        private GlowServerIcon icon;
+        private GlowFavicon icon;
 
         private StatusEvent(InetAddress address, String motd, int numPlayers, int maxPlayers) {
             super(address, motd, numPlayers, maxPlayers);
@@ -62,10 +64,10 @@ public final class StatusRequestHandler implements MessageHandler<GlowSession, S
 
         @Override
         public void setServerIcon(CachedServerIcon icon) throws IllegalArgumentException, UnsupportedOperationException {
-            if (!(icon instanceof GlowServerIcon)) {
+            if (!(icon instanceof GlowFavicon)) {
                 throw new IllegalArgumentException("Icon not provided by this implementation");
             }
-            this.icon = (GlowServerIcon) icon;
+            this.icon = (GlowFavicon) icon;
         }
 
         // todo: player list iteration handling

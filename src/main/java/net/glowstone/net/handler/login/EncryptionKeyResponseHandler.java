@@ -1,18 +1,16 @@
 package net.glowstone.net.handler.login;
 
 import com.flowpowered.networking.MessageHandler;
-import net.glowstone.EventFactory;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import net.glowstone.GlowServer;
 import net.glowstone.entity.meta.profile.PlayerProfile;
 import net.glowstone.entity.meta.profile.PlayerProperty;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.login.EncryptionKeyResponseMessage;
 import net.glowstone.util.UuidUtils;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -120,19 +118,19 @@ public final class EncryptionKeyResponseHandler implements MessageHandler<GlowSe
             try {
                 // authenticate
                 URLConnection connection = new URL(postURL).openConnection();
-                JSONObject json;
+                JsonObject json;
                 try (InputStream is = connection.getInputStream()) {
                     try {
-                        json = (JSONObject) new JSONParser().parse(new InputStreamReader(is));
-                    } catch (ParseException e) {
+                        json = (JsonObject) new JsonParser().parse(new InputStreamReader(is));
+                    } catch (JsonParseException e) {
                         GlowServer.logger.warning("Username \"" + username + "\" failed to authenticate!");
                         session.disconnect("Failed to verify username!");
                         return;
                     }
                 }
 
-                final String name = (String) json.get("name");
-                final String id = (String) json.get("id");
+                final String name = json.get("name").getAsString();
+                final String id = json.get("id").getAsString();
 
                 // parse UUID
                 final UUID uuid;
@@ -144,31 +142,31 @@ public final class EncryptionKeyResponseHandler implements MessageHandler<GlowSe
                     return;
                 }
 
-                final JSONArray propsArray = (JSONArray) json.get("properties");
+                final JsonArray propsArray = json.get("properties").getAsJsonArray();
 
                 // parse properties
                 final List<PlayerProperty> properties = new ArrayList<>(propsArray.size());
                 for (Object obj : propsArray) {
-                    JSONObject propJson = (JSONObject) obj;
-                    String propName = (String) propJson.get("name");
-                    String value = (String) propJson.get("value");
-                    String signature = (String) propJson.get("signature");
+                    JsonObject propJson = (JsonObject) obj;
+                    String propName = propJson.get("name").getAsString();
+                    String value = propJson.get("value").getAsString();
+                    String signature = propJson.get("signature").getAsString();
                     properties.add(new PlayerProperty(propName, value, signature));
                 }
-
+                /*
                 final AsyncPlayerPreLoginEvent event = EventFactory.onPlayerPreLogin(name, session.getAddress(), uuid);
                 if (event.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
                     session.disconnect(event.getKickMessage(), true);
                     return;
-                }
+                }*/
 
                 // spawn player
-                session.getServer().getScheduler().runTask(null, new Runnable() {
+                session.getServer().getGame().getScheduler().getTaskBuilder().execute(new Runnable() {
                     @Override
                     public void run() {
                         session.setPlayer(new PlayerProfile(name, uuid, properties));
                     }
-                });
+                }).submitServer();
             } catch (Exception e) {
                 GlowServer.logger.log(Level.SEVERE, "Error in authentication thread", e);
                 session.disconnect("Internal error during authentication.", true);

@@ -9,9 +9,9 @@ import net.glowstone.net.GlowBufUtils;
 import net.glowstone.net.GlowSession;
 import net.glowstone.net.message.play.game.PluginMessage;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -130,7 +130,7 @@ public final class PluginMessageHandler implements MessageHandler<GlowSession, P
                 }
 
                 // verify item in hand
-                ItemStack inHand = session.getPlayer().getItemInHand();
+                ItemStack inHand = session.getPlayer().getItemInHand().orNull();
                 if (inHand == null || inHand.getType() != Material.BOOK_AND_QUILL) {
                     return;
                 }

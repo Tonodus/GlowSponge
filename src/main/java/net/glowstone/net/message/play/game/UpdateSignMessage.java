@@ -2,15 +2,16 @@ package net.glowstone.net.message.play.game;
 
 import com.flowpowered.networking.Message;
 import lombok.Data;
-import net.glowstone.util.TextMessage;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.Texts;
 
 @Data
 public final class UpdateSignMessage implements Message {
 
     private final int x, y, z;
-    private final TextMessage[] message;
+    private final Text[] message;
 
-    public UpdateSignMessage(int x, int y, int z, TextMessage[] message) {
+    public UpdateSignMessage(int x, int y, int z, Text[] message) {
         if (message.length != 4) {
             throw new IllegalArgumentException();
         }
@@ -26,9 +27,9 @@ public final class UpdateSignMessage implements Message {
             throw new IllegalArgumentException();
         }
 
-        TextMessage[] encoded = new TextMessage[4];
+        Text[] encoded = new Text[4];
         for (int i = 0; i < 4; ++i) {
-            encoded[i] = new TextMessage(message[i]);
+            encoded[i] = Texts.of(message[i]);
         }
         return new UpdateSignMessage(x, y, z, encoded);
     }
