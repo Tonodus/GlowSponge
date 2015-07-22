@@ -1,23 +1,29 @@
 package net.glowstone;
 
-import net.glowstone.block.GlowBlock;
-import net.glowstone.block.blocktype.BlockTNT;
+import net.glowstone.block.GlowBlockType;
 import net.glowstone.entity.GlowEntity;
-import net.glowstone.entity.GlowHumanEntity;
 import net.glowstone.entity.GlowLivingEntity;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.util.MutableVector;
+import net.glowstone.entity.player.GlowHumanEntity;
+import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.event.entity.GlowExplosionPrimeEvent;
 import net.glowstone.net.message.play.game.ExplosionMessage;
-import org.bukkit.*;
+import net.glowstone.util.BlockVector;
+import net.glowstone.world.GlowWorld;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.util.BlockVector;
-import org.bukkit.util.Vector;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.event.entity.ExplosionPrimeEvent;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.service.event.EventManager;
+import org.spongepowered.api.world.Location;
 
 import java.util.*;
 
@@ -34,7 +40,8 @@ public final class Explosion {
 
     private float power;
     private final Entity source;
-    private final Location location;
+    private final Location _location;
+    private final MutableVector location;
     private final boolean incendiary;
     private final boolean breakBlocks;
     private final GlowWorld world;
@@ -66,16 +73,17 @@ public final class Explosion {
      * @param breakBlocks Whether blocks should break through this explosion
      */
     public Explosion(Entity source, Location location, float power, boolean incendiary, boolean breakBlocks) {
-        if (!(location.getWorld() instanceof GlowWorld)) {
+        if (!(location.getExtent() instanceof GlowWorld)) {
             throw new IllegalArgumentException("Supplied location does not have a valid GlowWorld");
         }
 
         this.source = source;
-        this.location = location.clone();
+        this._location = location;
+        this.location = new MutableVector(location);
         this.power = power;
         this.incendiary = incendiary;
         this.breakBlocks = breakBlocks;
-        this.world = (GlowWorld) location.getWorld();
+        this.world = (GlowWorld) location.getExtent();
     }
 
     public boolean explodeWithEvent() {
@@ -84,6 +92,8 @@ public final class Explosion {
 
         Set<BlockVector> droppedBlocks = calculateBlocks();
 
+        EventManager eventManager = world.getServer().getGame().getEventManager();
+        ExplosionPrimeEvent event = new GlowExplosionPrimeEvent(source, );
         EntityExplodeEvent event = EventFactory.callEvent(new EntityExplodeEvent(source, location, toBlockList(droppedBlocks), yield));
         if (event.isCancelled()) return false;
 
@@ -94,12 +104,12 @@ public final class Explosion {
         List<Block> blocks = toBlockList(droppedBlocks);
 
         for (Block block : blocks) {
-            handleBlockExplosion((GlowBlock) block);
+            handleBlockExplosion((BukkitBlock) block);
         }
 
         if (incendiary) {
             for (Block block : blocks) {
-                setBlockOnFire((GlowBlock) block);
+                setBlockOnFire((BukkitBlock) block);
             }
         }
 
@@ -140,7 +150,7 @@ public final class Explosion {
         double x = ox / 7.5 - 1;
         double y = oy / 7.5 - 1;
         double z = oz / 7.5 - 1;
-        Vector direction = new Vector(x, y, z);
+        MutableVector direction = new MutableVector(x, y, z);
         direction.normalize();
         direction.multiply(0.3f); // 0.3 blocks away with each step
 
@@ -149,9 +159,7 @@ public final class Explosion {
         float currentPower = calculateStartPower();
 
         while (currentPower > 0) {
-            GlowBlock block = world.getBlockAt(current);
-
-            if (block.getType() != Material.AIR) {
+            if (world.getBlockType(current.getBlockX(), current.getBlockY(), current.getBlockZ()) != BlockTypes.AIR) {
                 double blastDurability = getBlastDurability(block) / 5d;
                 blastDurability += 0.3F;
                 blastDurability *= 0.3F;
@@ -167,15 +175,17 @@ public final class Explosion {
         }
     }
 
-    private void handleBlockExplosion(GlowBlock block) {
-        if (block.getType() == Material.AIR) {
-            return;
-        } else if (block.getType() == Material.TNT) {
-            BlockTNT.igniteBlock(block, true);
+    private void handleBlockExplosion(Location location) {
+        BlockType type = location.getBlockType();
+        if (type == BlockTypes.TNT) {
+            //TODO: ignite TNT
+        } else if (type == BlockTypes.AIR) {
             return;
         }
-
-        block.breakNaturally(yield);
+        if (random.nextFloat() < yield) {
+            Collection<ItemStack> drops = ((GlowBlockType) type).getBehavior().getExplosiveDrops();
+            world
+        }
     }
 
     private float calculateStartPower() {
@@ -185,7 +195,7 @@ public final class Explosion {
         return rand * power;
     }
 
-    private double getBlastDurability(GlowBlock block) {
+    private double getBlastDurability(BukkitBlock block) {
         // TODO: return the block's blast durability
         return 2.5;
     }
@@ -197,7 +207,7 @@ public final class Explosion {
         return blocks;
     }
 
-    private void setBlockOnFire(GlowBlock block) {
+    private void setBlockOnFire(BukkitBlock block) {
         if (random.nextInt(3) != 0)
             return;
 

@@ -1,27 +1,28 @@
 package net.glowstone.util;
 
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.world.Location;
 
 import java.util.*;
 
-public class TaxicabBlockIterator implements Iterator<Block> {
+public class TaxicabBlockIterator implements Iterator<Location> {
 
-    private static final BlockFace[] VALID_FACES = new BlockFace[]{
-            BlockFace.DOWN, BlockFace.UP, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST
+    private static final Direction[] VALID_FACES = new Direction[]{
+            Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST
     };
 
     private final Queue<Object> pendingAnalysis = new LinkedList<>();
-    private final Queue<Block> nextValidBlocks = new LinkedList<>();
-    private final Set<Block> usedBlocks = new HashSet<>();
+    private final Queue<Location> nextValidBlocks = new LinkedList<>();
+    private final Set<Location> usedBlocks = new HashSet<>();
     private int currentDistance = 1;
     private int validBlockCount = 0;
 
     private int maxDistance = Integer.MAX_VALUE;
     private int maxBlocks = Integer.MAX_VALUE;
-    private Validator<Block> validator;
+    private Validator<BlockType> validator;
 
-    public TaxicabBlockIterator(Block origin) {
+    public TaxicabBlockIterator(Location origin) {
         pendingAnalysis.add(origin);
         pendingAnalysis.add(DistanceMarker.INSTANCE);
         usedBlocks.add(origin);
@@ -35,12 +36,12 @@ public class TaxicabBlockIterator implements Iterator<Block> {
         this.maxBlocks = maxBlocks;
     }
 
-    public void setValidator(Validator<Block> validator) {
+    public void setValidator(Validator<BlockType> validator) {
         this.validator = validator;
     }
 
-    private boolean isValid(Block block) {
-        return validator == null || validator.isValid(block);
+    private boolean isValid(Location block) {
+        return validator == null || validator.isValid(block.getBlockType());
     }
 
     @Override
@@ -62,9 +63,9 @@ public class TaxicabBlockIterator implements Iterator<Block> {
             }
 
             // If it wasn't the EoD marker, it must be a block. We'll look now for valid blocks around it.
-            Block block = (Block) object;
-            for (BlockFace face : VALID_FACES) {
-                Block near = block.getRelative(face);
+            Location block = (Location) object;
+            for (Direction face : VALID_FACES) {
+                Location near = block.getRelative(face);
 
                 // Only analyse the block if we haven't checked it yet.
                 if (usedBlocks.add(near) && isValid(near)) {
@@ -78,7 +79,7 @@ public class TaxicabBlockIterator implements Iterator<Block> {
     }
 
     @Override
-    public Block next() {
+    public Location next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }

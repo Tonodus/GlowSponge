@@ -1,17 +1,18 @@
 package net.glowstone.constants;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.Effect;
 import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.potion.Potion;
+import org.spongepowered.api.potion.PotionEffectTypes;
+import org.spongepowered.api.util.Direction;
 
 /**
  * Conversion of data classes to raw values for Effects.
  */
 public final class GlowEffect {
 
-    private GlowEffect() {}
+    private GlowEffect() {
+    }
 
     /**
      * Get the raw data value for an Effect and its data object.
@@ -20,7 +21,7 @@ public final class GlowEffect {
      * @param <T> the type of data
      * @return the raw data value
      */
-    public static <T> int getDataValue(Effect effect, T data) {
+    public static <T> int getDataValue(PotionEffectTypes effect, T data) {
         int result;
         switch (effect) {
             case POTION_BREAK:
@@ -34,7 +35,7 @@ public final class GlowEffect {
             case SMOKE:
                 // block face to data value conversion information from
                 // the protocol documentation
-                switch ((BlockFace) data) {
+                switch ((Direction) data) {
                     case SOUTH_EAST:
                         result = 0;
                         break;

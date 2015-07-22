@@ -1,12 +1,11 @@
 package net.glowstone.util;
 
 import com.google.common.collect.ImmutableList;
-import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
+import org.spongepowered.api.util.Direction;
 
 import java.util.List;
 
-import static org.bukkit.block.BlockFace.*;
+import static org.spongepowered.api.util.Direction.*;
 
 /**
  * A static class housing position-related utilities and constants.
@@ -28,16 +27,16 @@ public final class Position {
      * Common Rotation values used blocks such as Signs, Skulls, and Banners.
      * The order relates to the data/tag that is applied to the block on placing.
      */
-    public static final List<BlockFace> ROTATIONS = ImmutableList.of(NORTH, NORTH_NORTH_EAST, NORTH_EAST,
-            EAST_NORTH_EAST, EAST, EAST_SOUTH_EAST, SOUTH_EAST, SOUTH_SOUTH_EAST, SOUTH, SOUTH_SOUTH_WEST,
-            SOUTH_WEST, WEST_SOUTH_WEST, WEST, WEST_NORTH_WEST, NORTH_WEST, NORTH_NORTH_WEST);
+    public static final List<Direction> ROTATIONS = ImmutableList.of(NORTH, NORTH_NORTHEAST, NORTHEAST,
+            EAST_NORTHEAST, EAST, EAST_SOUTHEAST, SOUTHEAST, SOUTH_SOUTHEAST, SOUTH, SOUTH_SOUTHWEST,
+            SOUTHWEST, WEST_SOUTHWEST, WEST, WEST_NORTHWEST, NORTHWEST, NORTH_NORTHWEST);
 
     /**
      * Gets the X coordinate multiplied the granularity and rounded to an
      * integer.
      * @return An integer approximation of the X coordinate.
      */
-    public static int getIntX(Location loc) {
+    public static int getIntX(MutableVector loc) {
         return (int) (loc.getX() * GRANULARITY);
     }
 
@@ -46,7 +45,7 @@ public final class Position {
      * integer.
      * @return An integer approximation of the Y coordinate.
      */
-    public static int getIntY(Location loc) {
+    public static int getIntY(MutableVector loc) {
         return (int) (loc.getY() * GRANULARITY);
     }
 
@@ -55,7 +54,7 @@ public final class Position {
      * integer.
      * @return An integer approximation of the Z coordinate.
      */
-    public static int getIntZ(Location loc) {
+    public static int getIntZ(MutableVector loc) {
         return (int) (loc.getZ() * GRANULARITY);
     }
 
@@ -63,51 +62,32 @@ public final class Position {
      * Gets an integer approximation of the yaw between 0 and 255.
      * @return An integer approximation of the yaw.
      */
-    public static int getIntYaw(Location loc) {
-        return (int) (((loc.getYaw() % 360) / 360) * 256);
+    public static int getIntYaw(double yaw) {
+        return (int) (((yaw % 360) / 360) * 256);
     }
 
     /**
      * Gets an integer approximation of the pitch between 0 and 255.
      * @return An integer approximation of the yaw.
      */
-    public static int getIntPitch(Location loc) {
-        return (int) (((loc.getPitch() % 360) / 360) * 256);
+    public static int getIntPitch(double pitch) {
+        return (int) (((pitch % 360) / 360) * 256);
     }
 
     /**
-     * Gets whether there has been a position change between the two Locations.
+     * Gets whether there has been a position change between the two Vector3ds.
      * @return A boolean.
      */
-    public static boolean hasMoved(Location first, Location second) {
+    public static boolean hasMoved(MutableVector first, MutableVector second) {
         return first.getX() != second.getX() || first.getY() != second.getY() || first.getZ() != second.getZ();
     }
 
     /**
-     * Gets whether there has been a rotation change between the two Locations.
+     * Gets whether there has been a rotation change between the two Vector3ds.
      * @return A boolean.
      */
-    public static boolean hasRotated(Location first, Location second) {
-        return first.getPitch() != second.getPitch() || first.getYaw() != second.getYaw();
-    }
-
-    /**
-     * Copy the contents of one Location to another.
-     * @param source The Location to read from.
-     * @param dest The Location to modify. May be null.
-     * @return The dest parameter, modified if not null.
-     */
-    public static Location copyLocation(Location source, Location dest) {
-        if (dest == null) {
-            return null;
-        }
-        dest.setWorld(source.getWorld());
-        dest.setX(source.getX());
-        dest.setY(source.getY());
-        dest.setZ(source.getZ());
-        dest.setPitch(source.getPitch());
-        dest.setYaw(source.getYaw());
-        return dest;
+    public static boolean hasRotated(MutableVector first, MutableVector second) {
+        return first.getY() != second.getY() || first.getX() != second.getX();
     }
 
     /**
@@ -116,7 +96,7 @@ public final class Position {
      * @return intercardinal BlockFace
      * @throws IndexOutOfBoundsException If 0 > value > 15
      */
-    public static BlockFace getDirection(byte rotation) {
+    public static Direction getDirection(byte rotation) {
         return ROTATIONS.get(rotation);
     }
 
@@ -125,7 +105,7 @@ public final class Position {
      * @param rotation Rotation to get
      * @return byte data value for the given rotation, or -1 if rotation is SELF or null
      */
-    public static byte getDirection(BlockFace rotation) {
+    public static byte getDirection(Direction rotation) {
         return (byte) ROTATIONS.indexOf(rotation);
     }
 

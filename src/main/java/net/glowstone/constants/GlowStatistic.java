@@ -1,7 +1,7 @@
 package net.glowstone.constants;
 
-import org.apache.commons.lang.Validate;
-import org.bukkit.Statistic;
+import org.apache.commons.lang3.Validate;
+import org.spongepowered.api.statistic.Statistic;
 
 import static org.bukkit.Statistic.*;
 
@@ -10,7 +10,8 @@ import static org.bukkit.Statistic.*;
  */
 public final class GlowStatistic {
 
-    private GlowStatistic() {}
+    private GlowStatistic() {
+    }
 
     private static final String[] names = new String[Statistic.values().length];
 
