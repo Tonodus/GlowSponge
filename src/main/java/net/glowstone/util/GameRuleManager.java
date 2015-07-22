@@ -1,5 +1,7 @@
 package net.glowstone.util;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +28,10 @@ public final class GameRuleManager {
         setValue("reducedDebugInfo", false); // implemented
         setValue("sendCommandFeedback", true);
         setValue("showDeathMessages", true);
+    }
+
+    public Map<String, String> getGameRules() {
+        return ImmutableMap.copyOf(gameRules);
     }
 
     /**

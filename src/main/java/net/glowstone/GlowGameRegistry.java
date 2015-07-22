@@ -1,100 +1,170 @@
 package net.glowstone;
 
 import com.google.common.base.Optional;
+import net.glowstone.data.type.GlowProfession;
+import net.glowstone.item.recipe.GlowRecipeRegistry;
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.GameRegistry;
+import org.spongepowered.api.attribute.AttributeBuilder;
+import org.spongepowered.api.attribute.AttributeCalculator;
+import org.spongepowered.api.attribute.AttributeModifierBuilder;
 import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.meta.BannerPatternShape;
-import org.spongepowered.api.block.meta.NotePitch;
-import org.spongepowered.api.block.meta.SkullType;
+import org.spongepowered.api.data.DataManipulatorRegistry;
+import org.spongepowered.api.data.ImmutableDataRegistry;
+import org.spongepowered.api.data.type.Career;
+import org.spongepowered.api.data.type.Profession;
 import org.spongepowered.api.effect.particle.ParticleEffectBuilder;
 import org.spongepowered.api.effect.particle.ParticleType;
-import org.spongepowered.api.effect.sound.SoundType;
 import org.spongepowered.api.entity.EntityType;
-import org.spongepowered.api.entity.hanging.art.Art;
-import org.spongepowered.api.entity.living.meta.*;
-import org.spongepowered.api.entity.living.villager.Career;
-import org.spongepowered.api.entity.living.villager.Profession;
-import org.spongepowered.api.entity.player.gamemode.GameMode;
-import org.spongepowered.api.item.Enchantment;
+import org.spongepowered.api.item.FireworkEffectBuilder;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStackBuilder;
 import org.spongepowered.api.item.merchant.TradeOfferBuilder;
 import org.spongepowered.api.potion.PotionEffectBuilder;
-import org.spongepowered.api.potion.PotionEffectType;
+import org.spongepowered.api.resourcepack.ResourcePack;
+import org.spongepowered.api.scoreboard.ScoreboardBuilder;
+import org.spongepowered.api.scoreboard.TeamBuilder;
+import org.spongepowered.api.scoreboard.displayslot.DisplaySlot;
+import org.spongepowered.api.scoreboard.objective.ObjectiveBuilder;
+import org.spongepowered.api.statistic.*;
+import org.spongepowered.api.statistic.achievement.AchievementBuilder;
 import org.spongepowered.api.status.Favicon;
+import org.spongepowered.api.text.format.TextColor;
+import org.spongepowered.api.text.translation.Translation;
 import org.spongepowered.api.util.rotation.Rotation;
-import org.spongepowered.api.world.DimensionType;
-import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.WorldBuilder;
+import org.spongepowered.api.world.gen.PopulatorFactory;
+import org.spongepowered.api.world.gen.WorldGeneratorModifier;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class GlowGameRegistry implements GameRegistry{
-    private final GlowGame game;
+public class GlowGameRegistry implements GameRegistry {
+    private final Map<Class<?>, Object> builders = new HashMap<>();
+    private final GlowGameDictionary gameDictionary;
+    private final GlowRecipeRegistry recipeRegistry;
 
     public GlowGameRegistry(GlowGame game) {
-        this.game = game;
+        gameDictionary = new GlowGameDictionary();
+        recipeRegistry = new GlowRecipeRegistry();
+
+        registerCatalogTypes();
+        registerBuilders();
+    }
+
+    private void registerBuilders() {
+    }
+
+    private void registerCatalogTypes() {
+
     }
 
     @Override
-    public Optional<BlockType> getBlock(String id) {
+    public <T extends CatalogType> Optional<T> getType(Class<T> typeClass, String id) {
         return null;
     }
 
     @Override
-    public List<BlockType> getBlocks() {
+    public <T extends CatalogType> Collection<T> getAllOf(Class<T> typeClass) {
         return null;
     }
 
     @Override
-    public Optional<ItemType> getItem(String id) {
-        return null;
+    public <T> Optional<T> getBuilderOf(Class<T> builderClass) {
+        return Optional.fromNullable((T) builders.get(builderClass));
     }
 
-    @Override
-    public List<ItemType> getItems() {
-        return null;
-    }
-
-    @Override
-    public Optional<BiomeType> getBiome(String id) {
-        return null;
-    }
-
-    @Override
-    public List<BiomeType> getBiomes() {
-        return null;
+    private <T> T getBuilder(Class<T> builderClass) {
+        return (T) builders.get(builderClass);
     }
 
     @Override
     public ItemStackBuilder getItemBuilder() {
-        return null;
+        return getBuilder(ItemStackBuilder.class);
     }
 
     @Override
     public TradeOfferBuilder getTradeOfferBuilder() {
-        return null;
+        return getBuilder(TradeOfferBuilder.class);
+    }
+
+    @Override
+    public FireworkEffectBuilder getFireworkEffectBuilder() {
+        return getBuilder(FireworkEffectBuilder.class);
     }
 
     @Override
     public PotionEffectBuilder getPotionEffectBuilder() {
+        return getBuilder(PotionEffectBuilder.class);
+    }
+
+    @Override
+    public ObjectiveBuilder getObjectiveBuilder() {
+        return getBuilder(ObjectiveBuilder.class);
+    }
+
+    @Override
+    public TeamBuilder getTeamBuilder() {
+        return getBuilder(TeamBuilder.class);
+    }
+
+    @Override
+    public ScoreboardBuilder getScoreboardBuilder() {
+        return getBuilder(ScoreboardBuilder.class);
+    }
+
+    @Override
+    public StatisticBuilder getStatisticBuilder() {
+        return getBuilder(StatisticBuilder.class);
+    }
+
+    @Override
+    public StatisticBuilder.EntityStatisticBuilder getEntityStatisticBuilder() {
         return null;
     }
 
     @Override
-    public Optional<ParticleType> getParticleType(String name) {
+    public StatisticBuilder.BlockStatisticBuilder getBlockStatisticBuilder() {
         return null;
     }
 
     @Override
-    public List<ParticleType> getParticleTypes() {
+    public StatisticBuilder.ItemStatisticBuilder getItemStatisticBuilder() {
+        return null;
+    }
+
+    @Override
+    public StatisticBuilder.TeamStatisticBuilder getTeamStatisticBuilder() {
+        return null;
+    }
+
+    @Override
+    public AchievementBuilder getAchievementBuilder() {
+        return null;
+    }
+
+    @Override
+    public AttributeModifierBuilder getAttributeModifierBuilder() {
+        return null;
+    }
+
+    @Override
+    public AttributeCalculator getAttributeCalculator() {
+        return null;
+    }
+
+    @Override
+    public AttributeBuilder getAttributeBuilder() {
+        return null;
+    }
+
+    @Override
+    public WorldBuilder getWorldBuilder() {
         return null;
     }
 
@@ -104,148 +174,11 @@ public class GlowGameRegistry implements GameRegistry{
     }
 
     @Override
-    public Optional<SoundType> getSound(String name) {
-        return null;
-    }
-
-    @Override
-    public List<SoundType> getSounds() {
-        return null;
-    }
-
-    @Override
-    public Optional<EntityType> getEntity(String id) {
-        return null;
-    }
-
-    @Override
-    public List<EntityType> getEntities() {
-        return null;
-    }
-
-    @Override
-    public Optional<Art> getArt(String id) {
-        return null;
-    }
-
-    @Override
-    public List<Art> getArts() {
-        return null;
-    }
-
-    @Override
-    public Optional<DyeColor> getDye(String id) {
-        return null;
-    }
-
-    @Override
-    public List<DyeColor> getDyes() {
-        return null;
-    }
-
-    @Override
-    public Optional<HorseColor> getHorseColor(String id) {
-        return null;
-    }
-
-    @Override
-    public List<HorseColor> getHorseColors() {
-        return null;
-    }
-
-    @Override
-    public Optional<HorseStyle> getHorseStyle(String id) {
-        return null;
-    }
-
-    @Override
-    public List<HorseStyle> getHorseStyles() {
-        return null;
-    }
-
-    @Override
-    public Optional<HorseVariant> getHorseVariant(String id) {
-        return null;
-    }
-
-    @Override
-    public List<HorseVariant> getHorseVariants() {
-        return null;
-    }
-
-    @Override
-    public Optional<OcelotType> getOcelotType(String id) {
-        return null;
-    }
-
-    @Override
-    public List<OcelotType> getOcelotTypes() {
-        return null;
-    }
-
-    @Override
-    public Optional<RabbitType> getRabbitType(String id) {
-        return null;
-    }
-
-    @Override
-    public List<RabbitType> getRabbitTypes() {
-        return null;
-    }
-
-    @Override
-    public Optional<SkeletonType> getSkeletonType(String id) {
-        return null;
-    }
-
-    @Override
-    public List<SkeletonType> getSkeletonTypes() {
-        return null;
-    }
-
-    @Override
-    public Optional<Career> getCareer(String id) {
-        return null;
-    }
-
-    @Override
-    public List<Career> getCareers() {
-        return null;
-    }
-
-    @Override
-    public List<Career> getCareers(Profession profession) {
-        return null;
-    }
-
-    @Override
-    public Optional<Profession> getProfession(String id) {
-        return null;
-    }
-
-    @Override
-    public List<Profession> getProfessions() {
-        return null;
-    }
-
-    @Override
-    public List<GameMode> getGameModes() {
-        return null;
-    }
-
-    @Override
-    public List<PotionEffectType> getPotionEffects() {
-        return null;
-    }
-
-    @Override
-    public Optional<Enchantment> getEnchantment(String id) {
-        return null;
-    }
-
-    @Override
-    public List<Enchantment> getEnchantments() {
-        return null;
+    public Collection<Career> getCareers(Profession profession) {
+        if (profession instanceof GlowProfession) {
+            return ((GlowProfession) profession).getCareers();
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -254,22 +187,37 @@ public class GlowGameRegistry implements GameRegistry{
     }
 
     @Override
-    public Optional<DimensionType> getDimensionType(String name) {
+    public Optional<EntityStatistic> getEntityStatistic(StatisticGroup statisticGroup, EntityType entityType) {
         return null;
     }
 
     @Override
-    public List<DimensionType> getDimensionTypes() {
+    public Optional<ItemStatistic> getItemStatistic(StatisticGroup statisticGroup, ItemType itemType) {
         return null;
+    }
+
+    @Override
+    public Optional<BlockStatistic> getBlockStatistic(StatisticGroup statisticGroup, BlockType blockType) {
+        return null;
+    }
+
+    @Override
+    public Optional<TeamStatistic> getTeamStatistic(StatisticGroup statisticGroup, TextColor teamColor) {
+        return null;
+    }
+
+    @Override
+    public Collection<Statistic> getStatistics(StatisticGroup statisticGroup) {
+        return null;
+    }
+
+    @Override
+    public void registerStatistic(Statistic stat) {
+
     }
 
     @Override
     public Optional<Rotation> getRotationFromDegree(int degrees) {
-        return null;
-    }
-
-    @Override
-    public List<Rotation> getRotations() {
         return null;
     }
 
@@ -280,7 +228,7 @@ public class GlowGameRegistry implements GameRegistry{
 
     @Override
     public Favicon loadFavicon(String raw) throws IOException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -304,37 +252,47 @@ public class GlowGameRegistry implements GameRegistry{
     }
 
     @Override
-    public Optional<NotePitch> getNotePitch(String name) {
+    public GlowGameDictionary getGameDictionary() {
+        return gameDictionary;
+    }
+
+    @Override
+    public GlowRecipeRegistry getRecipeRegistry() {
+        return recipeRegistry;
+    }
+
+    @Override
+    public DataManipulatorRegistry getManipulatorRegistry() {
         return null;
     }
 
     @Override
-    public List<NotePitch> getNotePitches() {
+    public ImmutableDataRegistry getImmutableDataRegistry() {
         return null;
     }
 
     @Override
-    public Optional<SkullType> getSkullType(String name) {
+    public Optional<ResourcePack> getById(String id) {
         return null;
     }
 
     @Override
-    public List<SkullType> getSkullTypes() {
+    public Optional<DisplaySlot> getDisplaySlotForColor(TextColor color) {
         return null;
     }
 
     @Override
-    public Optional<BannerPatternShape> getBannerPatternShape(String name) {
+    public void registerWorldGeneratorModifier(WorldGeneratorModifier modifier) {
+
+    }
+
+    @Override
+    public PopulatorFactory getPopulatorFactory() {
         return null;
     }
 
     @Override
-    public Optional<BannerPatternShape> getBannerPatternShapeById(String id) {
-        return null;
-    }
-
-    @Override
-    public List<BannerPatternShape> getBannerPatternShapes() {
+    public Optional<Translation> getTranslationById(String id) {
         return null;
     }
 }
