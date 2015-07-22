@@ -1,11 +1,12 @@
 package net.glowstone.inventory;
 
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.ItemStack;
 
-public class GlowBrewerInventory extends GlowInventory implements BrewerInventory {
+public class GlowBrewerInventory extends GlowTopInventory implements BrewerInventory {
 
     private static final int INGREDIENT_SLOT = 0;
 

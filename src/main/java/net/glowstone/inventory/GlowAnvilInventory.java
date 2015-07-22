@@ -1,10 +1,11 @@
 package net.glowstone.inventory;
 
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.InventoryHolder;
 
-public class GlowAnvilInventory extends GlowInventory implements AnvilInventory {
+public class GlowAnvilInventory extends GlowTopInventory implements AnvilInventory {
 
     private static final int FIRST_ITEM_SLOT = 0;
     private static final int SECOND_ITEM_SLOT = 1;

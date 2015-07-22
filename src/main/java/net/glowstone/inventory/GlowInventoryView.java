@@ -1,6 +1,7 @@
 package net.glowstone.inventory;
 
-import net.glowstone.entity.GlowHumanEntity;
+import net.glowstone.entity.player.GlowHumanEntity;
+import net.glowstone.inventory.inventories.GlowPlayerInventory;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;

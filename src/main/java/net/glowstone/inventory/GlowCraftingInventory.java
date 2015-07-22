@@ -1,6 +1,7 @@
 package net.glowstone.inventory;
 
 import net.glowstone.GlowServer;
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.CraftingInventory;
@@ -13,7 +14,7 @@ import java.util.Arrays;
 /**
  * Represents a crafting grid inventory, both workbench and per-player.
  */
-public class GlowCraftingInventory extends GlowInventory implements CraftingInventory {
+public class GlowCraftingInventory extends GlowTopInventory implements CraftingInventory {
 
     private static final int RESULT_SLOT = 0;
     private static final int MATRIX_START = 1;

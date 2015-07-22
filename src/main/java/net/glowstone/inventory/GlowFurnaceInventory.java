@@ -1,11 +1,12 @@
 package net.glowstone.inventory;
 
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import org.bukkit.block.Furnace;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
 
-public class GlowFurnaceInventory extends GlowInventory implements FurnaceInventory {
+public class GlowFurnaceInventory extends GlowTopInventory implements FurnaceInventory {
 
     private static final int INPUT_SLOT = 0;
     private static final int FUEL_SLOT = 1;

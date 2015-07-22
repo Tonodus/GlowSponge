@@ -1,20 +1,26 @@
-package net.glowstone.inventory;
+package net.glowstone.inventory.inventories;
 
-import net.glowstone.entity.GlowHumanEntity;
-import net.glowstone.entity.GlowPlayer;
+import com.google.common.base.Optional;
+import net.glowstone.entity.player.GlowHumanEntity;
+import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.inventory.DragTracker;
+import net.glowstone.inventory.GlowCraftingInventory;
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import net.glowstone.net.message.play.inv.HeldItemMessage;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.spongepowered.api.entity.ArmorEquipable;
+import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.entity.HumanInventory;
+import org.spongepowered.api.item.inventory.equipment.EquipmentType;
+import org.spongepowered.api.item.inventory.type.CarriedInventory;
 
 import java.util.Arrays;
 
 /**
  * An Inventory representing the items a player is holding.
  */
-public class GlowPlayerInventory extends GlowInventory implements PlayerInventory, EntityEquipment {
+public class GlowPlayerInventory extends GlowTopInventory implements HumanInventory, ArmorEquipable, CarriedInventory<Player> {
 
     private static final int SIZE = 36;
 
@@ -96,10 +102,6 @@ public class GlowPlayerInventory extends GlowInventory implements PlayerInventor
     ////////////////////////////////////////////////////////////////////////////
     // Overrides
 
-    @Override
-    public HumanEntity getHolder() {
-        return (HumanEntity) super.getHolder();
-    }
 
     @Override
     public void setItem(int index, ItemStack item) {
@@ -122,12 +124,10 @@ public class GlowPlayerInventory extends GlowInventory implements PlayerInventor
     ////////////////////////////////////////////////////////////////////////////
     // Interface implementation
 
-    @Override
     public ItemStack[] getArmorContents() {
         return armor;
     }
 
-    @Override
     public void setArmorContents(ItemStack[] items) {
         if (items.length != 4) {
             throw new IllegalArgumentException("Length of armor must be 4");
@@ -137,47 +137,41 @@ public class GlowPlayerInventory extends GlowInventory implements PlayerInventor
         }
     }
 
-    @Override
     public ItemStack getHelmet() {
         return getItem(HELMET_SLOT);
     }
 
-    @Override
+
     public ItemStack getChestplate() {
         return getItem(CHESTPLATE_SLOT);
     }
 
-    @Override
+
     public ItemStack getLeggings() {
         return getItem(LEGGINGS_SLOT);
     }
 
-    @Override
     public ItemStack getBoots() {
         return getItem(BOOTS_SLOT);
     }
 
-    @Override
     public void setHelmet(ItemStack helmet) {
         setItem(HELMET_SLOT, helmet);
     }
 
-    @Override
     public void setChestplate(ItemStack chestplate) {
         setItem(CHESTPLATE_SLOT, chestplate);
     }
 
-    @Override
     public void setLeggings(ItemStack leggings) {
         setItem(LEGGINGS_SLOT, leggings);
     }
 
-    @Override
     public void setBoots(ItemStack boots) {
         setItem(BOOTS_SLOT, boots);
     }
 
-    @Override
+
     public ItemStack getItemInHand() {
         return getItem(heldSlot);
     }
@@ -265,5 +259,25 @@ public class GlowPlayerInventory extends GlowInventory implements PlayerInventor
     @Override
     public void setBootsDropChance(float chance) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean canEquip(EquipmentType type) {
+        return false;
+    }
+
+    @Override
+    public boolean canEquip(EquipmentType type, ItemStack equipment) {
+        return false;
+    }
+
+    @Override
+    public Optional<ItemStack> getEquipped(EquipmentType type) {
+        return null;
+    }
+
+    @Override
+    public boolean equip(EquipmentType type, ItemStack equipment) {
+        return false;
     }
 }

@@ -1,11 +1,12 @@
 package net.glowstone.inventory;
 
+import net.glowstone.inventory.inventories.base.GlowTopInventory;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-public class GlowEnchantingInventory extends GlowInventory implements EnchantingInventory {
+public class GlowEnchantingInventory extends GlowTopInventory implements EnchantingInventory {
 
     private static final int ITEM_SLOT = 0;
     private static final int LAPIS_SLOT = 1;

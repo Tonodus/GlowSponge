@@ -1,25 +1,23 @@
-package net.glowstone.inventory;
+package net.glowstone.inventory.inventories.base;
 
 import net.glowstone.constants.ItemIds;
+import net.glowstone.inventory.InventoryIterator;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.item.inventory.Inventory;
 
 import java.util.*;
 
 /**
  * A class which represents an inventory and the items it contains.
  */
-public class GlowInventory implements Inventory {
+public class GlowTopInventory implements Inventory {
 
-    /**
-     * The list of humans viewing this inventory.
-     */
-    private final Set<HumanEntity> viewers = new HashSet<>();
+
 
     /**
      * The owner of this inventory.
@@ -34,12 +32,7 @@ public class GlowInventory implements Inventory {
     /**
      * This inventory's contents.
      */
-    private final ItemStack[] slots;
-
-    /**
-     * This inventory's slot types.
-     */
-    protected final SlotType[] slotTypes;
+    private final Inventory[] children;
 
     /**
      * The inventory's name.
@@ -51,15 +44,15 @@ public class GlowInventory implements Inventory {
      */
     private int maxStackSize = 64;
 
-    public GlowInventory(InventoryHolder owner, InventoryType type) {
+    public GlowTopInventory(InventoryHolder owner, InventoryType type) {
         this(owner, type, type.getDefaultSize(), type.getDefaultTitle());
     }
 
-    public GlowInventory(InventoryHolder owner, InventoryType type, int size) {
+    public GlowTopInventory(InventoryHolder owner, InventoryType type, int size) {
         this(owner, type, size, type.getDefaultTitle());
     }
 
-    public GlowInventory(InventoryHolder owner, InventoryType type, int size, String title) {
+    public GlowTopInventory(InventoryHolder owner, InventoryType type, int size, String title) {
         this.owner = owner;
         this.type = type;
         this.title = title;
@@ -71,35 +64,7 @@ public class GlowInventory implements Inventory {
     ////////////////////////////////////////////////////////////////////////////
     // Internals
 
-    /**
-     * Add a viewer to the inventory.
-     * @param viewer The HumanEntity to add.
-     */
-    public void addViewer(HumanEntity viewer) {
-        if (!viewers.contains(viewer)) {
-            viewers.add(viewer);
-        }
-    }
 
-    /**
-     * Remove a viewer from the inventory.
-     * @param viewer The HumanEntity to remove.
-     */
-    public void removeViewer(HumanEntity viewer) {
-        if (viewers.contains(viewer)) {
-            viewers.remove(viewer);
-        }
-    }
-
-    /**
-     * Get the type of the specified slot.
-     * @param slot The slot number.
-     * @return The SlotType of the slot.
-     */
-    public SlotType getSlotType(int slot) {
-        if (slot < 0) return SlotType.OUTSIDE;
-        return slotTypes[slot];
-    }
 
     /**
      * Check whether it is allowed for a player to insert the given ItemStack

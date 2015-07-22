@@ -1,47 +1,54 @@
 package net.glowstone.inventory;
 
-import org.bukkit.Material;
+import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 /**
- * A {@link MaterialMatcher} implementation for basic tool types.
+ * A {@link ItemMatcher} implementation for basic tool types.
  */
-public enum ToolType implements MaterialMatcher {
+public enum ToolType implements ItemMatcher {
     // Pickaxes
-    DIAMOND_PICKAXE(Material.DIAMOND_PICKAXE, null),
-    IRON_PICKAXE(Material.IRON_PICKAXE, DIAMOND_PICKAXE),
-    STONE_PICKAXE(Material.STONE_PICKAXE, IRON_PICKAXE),
-    GOLD_PICKAXE(Material.GOLD_PICKAXE, STONE_PICKAXE),
-    PICKAXE(Material.WOOD_PICKAXE, GOLD_PICKAXE),
+    DIAMOND_PICKAXE(ItemTypes.DIAMOND_PICKAXE, null),
+    IRON_PICKAXE(ItemTypes.IRON_PICKAXE, DIAMOND_PICKAXE),
+    STONE_PICKAXE(ItemTypes.STONE_PICKAXE, IRON_PICKAXE),
+    GOLD_PICKAXE(ItemTypes.GOLDEN_PICKAXE, STONE_PICKAXE),
+    PICKAXE(ItemTypes.WOODEN_PICKAXE, GOLD_PICKAXE),
 
     // Spades
-    DIAMOND_SPADE(Material.DIAMOND_SPADE, null),
-    IRON_SPADE(Material.IRON_SPADE, DIAMOND_SPADE),
-    STONE_SPADE(Material.STONE_SPADE, IRON_PICKAXE),
-    GOLD_SPADE(Material.GOLD_SPADE, STONE_SPADE),
-    SPADE(Material.WOOD_SPADE, GOLD_SPADE),
+    DIAMOND_SPADE(ItemTypes.DIAMOND_SHOVEL, null),
+    IRON_SPADE(ItemTypes.IRON_SHOVEL, DIAMOND_SPADE),
+    STONE_SPADE(ItemTypes.STONE_SHOVEL, IRON_PICKAXE),
+    GOLD_SPADE(ItemTypes.GOLDEN_SHOVEL, STONE_SPADE),
+    SPADE(ItemTypes.WOODEN_SHOVEL, GOLD_SPADE),
 
     // Swords
-    DIAMOND_SWORD(Material.DIAMOND_SWORD, null),
-    IRON_SWORD(Material.IRON_SWORD, DIAMOND_SWORD),
-    STONE_SWORD(Material.STONE_SWORD, IRON_SWORD),
-    GOLD_SWORD(Material.GOLD_SWORD, STONE_SWORD),
-    SWORD(Material.WOOD_SWORD, GOLD_SWORD);
+    DIAMOND_SWORD(ItemTypes.DIAMOND_SWORD, null),
+    IRON_SWORD(ItemTypes.IRON_SWORD, DIAMOND_SWORD),
+    STONE_SWORD(ItemTypes.STONE_SWORD, IRON_SWORD),
+    GOLD_SWORD(ItemTypes.GOLDEN_SWORD, STONE_SWORD),
+    SWORD(ItemTypes.WOODEN_SWORD, GOLD_SWORD);
 
-    private final Material bukkitMaterial;
+    private final ItemType itemType;
     private final ToolType better;
 
-    private ToolType(Material bukkitMaterial, ToolType better) {
-        this.bukkitMaterial = bukkitMaterial;
+    ToolType(ItemType itemType, ToolType better) {
+        this.itemType = itemType;
         this.better = better;
     }
 
     /**
-     * Checks the given {@link org.bukkit.Material} is equal or better than this ToolType.
+     * Checks the given {@link ItemType} is equal or better than this ToolType.
      * @param material The material to check
      * @return true if the material is equal or better, false otherwise
      */
     @Override
-    public boolean matches(Material material) {
-        return bukkitMaterial == material || (better != null && better.matches(material));
+    public boolean matches(ItemType material) {
+        return itemType == material || (better != null && better.matches(material));
+    }
+
+    @Override
+    public boolean matches(ItemStack itemType) {
+        return matches(itemType.getItem());
     }
 }

@@ -2,10 +2,11 @@ package net.glowstone.inventory;
 
 import com.google.common.collect.Iterators;
 import net.glowstone.GlowServer;
+import net.glowstone.item.recipe.GlowRecipeRegistry;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.*;
+import org.spongepowered.api.item.recipe.Recipe;
 
 import java.io.InputStream;
 import java.util.*;
@@ -14,11 +15,13 @@ import java.util.*;
  * Manager for crafting and smelting recipes
  */
 public final class CraftingManager implements Iterable<Recipe> {
-
-    private final ArrayList<ShapedRecipe> shapedRecipes = new ArrayList<>();
-    private final ArrayList<ShapelessRecipe> shapelessRecipes = new ArrayList<>();
+    private final GlowRecipeRegistry recipeRegistry;
     private final ArrayList<FurnaceRecipe> furnaceRecipes = new ArrayList<>();
     private final Map<Material, Integer> furnaceFuels = new HashMap<>();
+
+    public CraftingManager(GlowRecipeRegistry recipeRegistry) {
+        this.recipeRegistry = recipeRegistry;
+    }
 
     public void initialize() {
         resetRecipes();
@@ -29,26 +32,6 @@ public final class CraftingManager implements Iterable<Recipe> {
                 shapelessRecipes.size() + " shapeless, " +
                 furnaceRecipes.size() + " furnace, " +
                 furnaceFuels.size() + " fuels.");
-    }
-
-    /**
-     * Adds a recipe to the crafting manager.
-     * @param recipe The recipe to add.
-     * @return Whether adding the recipe was successful.
-     */
-    public boolean addRecipe(Recipe recipe) {
-        if (recipe instanceof ShapedRecipe) {
-            shapedRecipes.add((ShapedRecipe) recipe);
-            return true;
-        } else if (recipe instanceof ShapelessRecipe) {
-            shapelessRecipes.add((ShapelessRecipe) recipe);
-            return true;
-        } else if (recipe instanceof FurnaceRecipe) {
-            furnaceRecipes.add((FurnaceRecipe) recipe);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -121,107 +104,6 @@ public final class CraftingManager implements Iterable<Recipe> {
         }
 
         return getShapelessRecipe(items);
-    }
-
-    private ShapedRecipe getShapedRecipe(int size, ItemStack[] items) {
-        for (ShapedRecipe recipe : shapedRecipes) {
-            Map<Character, ItemStack> ingredients = recipe.getIngredientMap();
-            String[] shape = recipe.getShape();
-
-            int rows = shape.length, cols = 0;
-            for (String row : shape) {
-                if (row.length() > cols) {
-                    cols = row.length();
-                }
-            }
-
-            if (rows == 0 || cols == 0) continue;
-
-            // outer loop: try at each possible starting position
-            for (int rStart = 0; rStart <= size - rows; ++rStart) {
-                position:
-                for (int cStart = 0; cStart <= size - cols; ++cStart) {
-                    // inner loop: verify recipe against this position
-                    for (int row = 0; row < rows; ++row) {
-                        for (int col = 0; col < cols; ++col) {
-                            ItemStack given = items[(rStart + row) * size + cStart + col];
-                            char ingredientChar = shape[row].length() > col ? shape[row].charAt(col) : ' ';
-                            ItemStack expected = ingredients.get(ingredientChar);
-
-                            // check for mismatch in presence of an item in that slot at all
-                            if (expected == null) {
-                                if (given != null) {
-                                    continue position;
-                                } else {
-                                    continue; // good match
-                                }
-                            } else if (given == null) {
-                                continue position;
-                            }
-
-                            // check for type and data match
-                            if (!matchesWildcard(expected, given)) {
-                                continue position;
-                            }
-                        }
-                    }
-
-                    // also check that no items outside the recipe size are present
-                    for (int row = 0; row < size; row++) {
-                        for (int col = 0; col < size; col++) {
-                            // if this position is outside the recipe and non-null, fail
-                            if ((row < rStart || row >= rStart + rows || col < cStart || col >= cStart + cols) &&
-                                    items[row * size + col] != null) {
-                                continue position;
-                            }
-                        }
-                    }
-
-                    // recipe matches and zero items outside the recipe part.
-                    return recipe;
-                }
-            } // end position loop
-        } // end recipe loop
-
-        return null;
-    }
-
-    private ShapelessRecipe getShapelessRecipe(ItemStack[] items) {
-        recipe:
-        for (ShapelessRecipe recipe : shapelessRecipes) {
-            boolean[] accountedFor = new boolean[items.length];
-
-            // Mark empty item slots accounted for
-            for (int i = 0; i < items.length; ++i) {
-                accountedFor[i] = items[i] == null;
-            }
-
-            // Make sure each ingredient in the recipe exists in the inventory
-            ingredient:
-            for (ItemStack ingredient : recipe.getIngredientList()) {
-                for (int i = 0; i < items.length; ++i) {
-                    // if this item is not already used and it matches this ingredient...
-                    if (!accountedFor[i] && matchesWildcard(ingredient, items[i])) {
-                        // ... this item is accounted for and this ingredient is found.
-                        accountedFor[i] = true;
-                        continue ingredient;
-                    }
-                }
-                // no item matched this ingredient, so the recipe fails
-                continue recipe;
-            }
-
-            // Make sure inventory has no leftover items
-            for (int i = 0; i < items.length; ++i) {
-                if (!accountedFor[i]) {
-                    continue recipe;
-                }
-            }
-
-            return recipe;
-        }
-
-        return null;
     }
 
     @Override

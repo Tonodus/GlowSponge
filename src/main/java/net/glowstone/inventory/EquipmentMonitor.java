@@ -1,8 +1,8 @@
 package net.glowstone.inventory;
 
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +16,7 @@ public final class EquipmentMonitor {
     /**
      * The entity whose equipment is being monitored.
      */
-    private final LivingEntity entity;
+    private final Living entity;
 
     /**
      * The previous equipment.
@@ -37,7 +37,7 @@ public final class EquipmentMonitor {
      * Create a new monitor for the given entity.
      * @param entity The entity whose equipment to monitor.
      */
-    public EquipmentMonitor(LivingEntity entity) {
+    public EquipmentMonitor(Living entity) {
         this.entity = entity;
     }
 
@@ -100,7 +100,7 @@ public final class EquipmentMonitor {
      * Get the entity whose equipment is being monitored.
      * @return The entity equipment.
      */
-    public LivingEntity getEntity() {
+    public Living getEntity() {
         return entity;
     }
 
