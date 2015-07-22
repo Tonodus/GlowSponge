@@ -1,28 +1,28 @@
 package net.glowstone.entity;
 
 import com.flowpowered.networking.Message;
-import net.glowstone.EventFactory;
-import net.glowstone.Explosion;
+import com.google.common.base.Optional;
 import net.glowstone.net.message.play.entity.SpawnObjectMessage;
 import net.glowstone.util.Position;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.TNTPrimed;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.spongepowered.api.data.manipulator.entity.FuseData;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.explosive.PrimedTNT;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.world.Location;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class GlowTNTPrimed extends GlowExplosive implements TNTPrimed {
+public class GlowTNTPrimed extends GlowExplosive implements PrimedTNT {
 
     private int fuseTicks;
     private Entity source;
 
     public GlowTNTPrimed(Location location, Entity source) {
-        super(location, Explosion.POWER_TNT);
+        super(location);
         this.fuseTicks = 80;
         this.source = source;
     }
@@ -40,13 +40,13 @@ public class GlowTNTPrimed extends GlowExplosive implements TNTPrimed {
 
         fuseTicks--;
         if (fuseTicks <= 0) {
-            explode();
+            detonate();
         } else {
-            world.showParticle(location.clone().add(0, 0.5D, 0), Particle.SMOKE, 0, 0, 0, 0, 0);
+            //world.showParticle(location.clone().add(0, 0.5D, 0), Particle.SMOKE, 0, 0, 0, 0, 0);
         }
     }
 
-    private void explode() {
+   /* private void explode() {
         ExplosionPrimeEvent event = EventFactory.callEvent(new ExplosionPrimeEvent(this));
 
         if (!event.isCancelled()) {
@@ -56,38 +56,38 @@ public class GlowTNTPrimed extends GlowExplosive implements TNTPrimed {
         }
 
         remove();
-    }
+    }*/
 
     @Override
     public List<Message> createSpawnMessage() {
         int x = Position.getIntX(location),
                 y = Position.getIntY(location),
                 z = Position.getIntZ(location),
-                pitch = Position.getIntPitch(location),
-                yaw = Position.getIntYaw(location);
+                pitch = Position.getIntPitch(this.pitch),
+                yaw = Position.getIntYaw(this.yaw);
 
         LinkedList<Message> result = new LinkedList<>();
         result.add(new SpawnObjectMessage(id, 50, x, y, z, pitch, yaw));
         return result;
     }
 
+
     @Override
-    public final void setFuseTicks(int i) {
-        this.fuseTicks = i;
+    public Optional<Living> getDetonator() {
+        if (source instanceof Living) {
+            return Optional.fromNullable((Living) source);
+        } else {
+            return Optional.absent();
+        }
     }
 
     @Override
-    public final int getFuseTicks() {
-        return fuseTicks;
+    public FuseData getFuseData() {
+        return getData(FuseData.class).get();
     }
 
     @Override
-    public final Entity getSource() {
-        return source.isValid() ? source : null;
-    }
-
-    @Override
-    public final EntityType getType() {
-        return EntityType.PRIMED_TNT;
+    public EntityType getType() {
+        return EntityTypes.PRIMED_TNT;
     }
 }

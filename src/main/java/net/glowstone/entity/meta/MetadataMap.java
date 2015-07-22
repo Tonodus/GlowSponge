@@ -1,8 +1,8 @@
 package net.glowstone.entity.meta;
 
 import com.google.common.collect.ImmutableList;
-import org.bukkit.entity.Entity;
-import org.bukkit.inventory.ItemStack;
+import net.glowstone.entity.GlowEntity;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.*;
 
@@ -13,9 +13,9 @@ public class MetadataMap {
 
     private final Map<MetadataIndex, Object> map = new EnumMap<>(MetadataIndex.class);
     private final List<Entry> changes = new ArrayList<>(4);
-    private final Class<? extends Entity> entityClass;
+    private final Class<? extends GlowEntity> entityClass;
 
-    public MetadataMap(Class<? extends Entity> entityClass) {
+    public MetadataMap(Class<? extends GlowEntity> entityClass) {
         this.entityClass = entityClass;
         set(MetadataIndex.STATUS, 0);  // all entities have to have at least this
     }

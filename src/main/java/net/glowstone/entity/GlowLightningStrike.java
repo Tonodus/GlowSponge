@@ -4,9 +4,11 @@ import com.flowpowered.networking.Message;
 import net.glowstone.net.message.play.entity.SpawnLightningStrikeMessage;
 import net.glowstone.util.Position;
 import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LightningStrike;
+import org.spongepowered.api.data.manipulator.entity.ExpirableData;
+import org.spongepowered.api.effect.sound.SoundTypes;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.weather.Lightning;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,13 +17,13 @@ import java.util.Random;
 /**
  * A GlowLightning strike is an entity produced during thunderstorms.
  */
-public class GlowLightningStrike extends GlowWeather implements LightningStrike {
+public class GlowLightningStrike extends GlowWeatherEntity implements Lightning {
 
     /**
      * Whether the lightning strike is just for effect.
      */
     private boolean effect;
-    
+
     /**
      * How long this lightning strike has to remain in the world.
      */
@@ -37,13 +39,18 @@ public class GlowLightningStrike extends GlowWeather implements LightningStrike 
     }
 
     @Override
-    public EntityType getType() {
-        return EntityType.LIGHTNING;
+    public boolean isEffect() {
+        return effect;
     }
 
     @Override
-    public boolean isEffect() {
-        return effect;
+    public void setEffect(boolean effect) {
+        this.effect = effect;
+    }
+
+    @Override
+    public ExpirableData getExpiringData() {
+        return getData(ExpirableData.class).get();
     }
 
     @Override
@@ -53,8 +60,8 @@ public class GlowLightningStrike extends GlowWeather implements LightningStrike 
             remove();
         }
         if (getTicksLived() == 1) {
-            location.getWorld().playSound(location, Sound.AMBIENCE_THUNDER, 10000, 0.8F + random.nextFloat() * 0.2F);
-            location.getWorld().playSound(location, Sound.EXPLODE, 2, 0.5F + random.nextFloat() * 0.2F);
+            world.playSound(location, SoundTypes.AMBIENCE_THUNDER, 10000, 0.8F + random.nextFloat() * 0.2F);
+            world.playSound(location, SoundTypes.EXPLODE, 2, 0.5F + random.nextFloat() * 0.2F);
         }
     }
 
@@ -71,4 +78,8 @@ public class GlowLightningStrike extends GlowWeather implements LightningStrike 
         return Arrays.asList();
     }
 
+    @Override
+    public EntityType getType() {
+        return EntityTypes.LIGHTNING;
+    }
 }

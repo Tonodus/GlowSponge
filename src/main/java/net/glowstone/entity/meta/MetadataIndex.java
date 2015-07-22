@@ -1,7 +1,8 @@
 package net.glowstone.entity.meta;
 
-import org.bukkit.entity.*;
+import net.glowstone.entity.GlowEntity;
 import org.bukkit.entity.minecart.PoweredMinecart;
+import org.spongepowered.api.entity.Entity;
 
 import static net.glowstone.entity.meta.MetadataType.*;
 
@@ -13,7 +14,7 @@ public enum MetadataIndex {
     STATUS(0, BYTE, Entity.class),
     AIR_TIME(1, SHORT, Entity.class),
 
-    HEALTH(6, FLOAT, LivingEntity.class),
+    HEALTH(6, FLOAT, LivingEntiy.class),
     POTION_COLOR(7, INT, LivingEntity.class),
     POTION_AMBIENT(8, BYTE, LivingEntity.class),
     ARROW_COUNT(9, BYTE, LivingEntity.class),
@@ -101,8 +102,7 @@ public enum MetadataIndex {
     ITEM_FRAME_ITEM(2, ITEM, ItemFrame.class),
     ITEM_FRAME_ROTATION(3, BYTE, ItemFrame.class),
 
-    ENDER_CRYSTAL_HEALTH(8, INT, EnderCrystal.class),
-    ;
+    ENDER_CRYSTAL_HEALTH(8, INT, EnderCrystal.class),;
 
     private final int index;
     private final MetadataType type;
@@ -126,7 +126,7 @@ public enum MetadataIndex {
         return appliesTo;
     }
 
-    public boolean appliesTo(Class<? extends Entity> clazz) {
+    public boolean appliesTo(Class<? extends GlowEntity> clazz) {
         return appliesTo.isAssignableFrom(clazz);
     }
 

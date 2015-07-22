@@ -1,36 +1,21 @@
 package net.glowstone.entity;
 
-import org.bukkit.Location;
-import org.bukkit.entity.Explosive;
+import org.spongepowered.api.data.manipulator.entity.ExplosiveRadiusData;
+import org.spongepowered.api.entity.explosive.Explosive;
+import org.spongepowered.api.world.Location;
 
 public abstract class GlowExplosive extends GlowEntity implements Explosive {
-
-    private float yield;
-    private boolean incendiary;
-
-    public GlowExplosive(Location location, float yield) {
+    public GlowExplosive(Location location) {
         super(location);
-        this.yield = yield;
-        this.incendiary = false;
     }
 
     @Override
-    public void setYield(float yield) {
-        this.yield = yield;
+    public void detonate() {
+
     }
 
     @Override
-    public float getYield() {
-        return yield;
-    }
-
-    @Override
-    public void setIsIncendiary(boolean incendiary) {
-        this.incendiary = incendiary;
-    }
-
-    @Override
-    public boolean isIncendiary() {
-        return this.incendiary;
+    public ExplosiveRadiusData getExplosiveRadiusData() {
+        return getData(ExplosiveRadiusData.class).get();
     }
 }

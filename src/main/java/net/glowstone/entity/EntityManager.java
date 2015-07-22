@@ -1,10 +1,10 @@
 package net.glowstone.entity;
 
-import net.glowstone.GlowChunk;
 import net.glowstone.entity.physics.BoundingBox;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.entity.Entity;
+import net.glowstone.util.MutableVector;
+import net.glowstone.world.GlowChunk;
+import net.glowstone.world.GlowWorld;
+import org.spongepowered.api.entity.Entity;
 
 import java.util.*;
 
@@ -68,7 +68,7 @@ public final class EntityManager implements Iterable<GlowEntity> {
         }
         entities.put(entity.id, entity);
         ((Collection<GlowEntity>) getAll(entity.getClass())).add(entity);
-        ((GlowChunk) entity.location.getChunk()).getRawEntities().add(entity);
+        getChunk(entity.world, entity.location).getRawEntities().add(entity);
     }
 
     /**
@@ -78,7 +78,7 @@ public final class EntityManager implements Iterable<GlowEntity> {
     void unregister(GlowEntity entity) {
         entities.remove(entity.id);
         getAll(entity.getClass()).remove(entity);
-        ((GlowChunk) entity.location.getChunk()).getRawEntities().remove(entity);
+        getChunk(entity.world, entity.location).getRawEntities().remove(entity);
     }
 
     /**
@@ -87,13 +87,17 @@ public final class EntityManager implements Iterable<GlowEntity> {
      * @param entity The entity.
      * @param newLocation The new location.
      */
-    void move(GlowEntity entity, Location newLocation) {
-        Chunk prevChunk = entity.location.getChunk();
-        Chunk newChunk = newLocation.getChunk();
+    void move(GlowEntity entity, MutableVector newLocation) {
+        GlowChunk prevChunk = getChunk(entity.world, entity.location);
+        GlowChunk newChunk = getChunk(entity.world, newLocation);
         if (prevChunk != newChunk) {
-            ((GlowChunk) prevChunk).getRawEntities().remove(entity);
-            ((GlowChunk) newChunk).getRawEntities().add(entity);
+            prevChunk.getRawEntities().remove(entity);
+            newChunk.getRawEntities().add(entity);
         }
+    }
+
+    private static GlowChunk getChunk(GlowWorld world, MutableVector position) {
+        return (GlowChunk) world.getChunk(position.getBlockX(), position.getBlockY(), position.getBlockZ()).get();
     }
 
     @Override

@@ -1,7 +1,7 @@
 package net.glowstone.entity.meta.profile;
 
 import net.glowstone.GlowServer;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.util.UuidUtils;
 import net.glowstone.util.nbt.CompoundTag;
 import net.glowstone.util.nbt.Tag;
@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.apache.commons.lang.Validate;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.spongepowered.api.GameProfile;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ import java.util.logging.Level;
 /**
  * Information about a player's name, UUID, and other properties.
  */
-public final class PlayerProfile {
+public final class PlayerProfile implements GameProfile {
 
     private final String name;
     private final UUID uuid;

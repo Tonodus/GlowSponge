@@ -1,22 +1,25 @@
 package net.glowstone.entity.objects;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.networking.Message;
 import net.glowstone.entity.GlowEntity;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.util.MutableVector;
 import net.glowstone.entity.meta.MetadataIndex;
+import net.glowstone.entity.player.GlowPlayer;
+import net.glowstone.item.GlowItemStackBuilder;
 import net.glowstone.net.message.play.entity.*;
 import net.glowstone.util.Position;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
+import org.spongepowered.api.data.manipulator.RepresentedItemData;
+import org.spongepowered.api.effect.sound.SoundTypes;
+import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.Item;
+import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.world.Location;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -55,14 +58,17 @@ public final class GlowItem extends GlowEntity implements Item {
     private boolean getPickedUp(GlowPlayer player) {
         // todo: fire PlayerPickupItemEvent in a way that allows for 'remaining' calculations
 
-        HashMap<Integer, ItemStack> map = player.getInventory().addItem(getItemStack());
-        player.updateInventory(); // workaround for player editing slot & it immediately being filled again
-        if (!map.isEmpty()) {
-            setItemStack(map.values().iterator().next());
-            return false;
-        } else {
+        ItemStack stack = getItemStack();
+        int oldQuantity = stack.getQuantity();
+        player.getInventory().offer(stack);
+        //player.updateInventory(); // workaround for player editing slot & it immediately being filled again
+        if (stack.getQuantity() > 0) {
+            setItemStack(stack);
+        }
+
+        if (oldQuantity > stack.getQuantity()) {
             CollectItemMessage message = new CollectItemMessage(getEntityId(), player.getEntityId());
-            world.playSound(location, Sound.ITEM_PICKUP, 0.3f, (float) (1 + Math.random()));
+            world.playSound(SoundTypes.ITEM_PICKUP, location.toVector3d(), 0.3f, (float) (1 + Math.random()));
             for (GlowPlayer other : world.getRawPlayers()) {
                 if (other.canSeeEntity(this)) {
                     other.getSession().send(message);
@@ -70,6 +76,8 @@ public final class GlowItem extends GlowEntity implements Item {
             }
             remove();
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -82,7 +90,7 @@ public final class GlowItem extends GlowEntity implements Item {
 
     @Override
     public EntityType getType() {
-        return EntityType.DROPPED_ITEM;
+        return EntityTypes.DROPPED_ITEM;
     }
 
     @Override
@@ -129,15 +137,15 @@ public final class GlowItem extends GlowEntity implements Item {
         // physics and moved up to GlowEntity
 
         // continuously set velocity to 0 to make things look more normal
-        setVelocity(new Vector(0, 0, 0));
+        setVelocity(new Vector3d(0, 0, 0));
 
-        if (location.getBlock().getType().isSolid()) {
+        if (world.getBlockType(location.toVector3i()).isSolidCube()) {
             // float up out of solid blocks
-            setRawLocation(location.clone().add(0, 0.2, 0));
+            location.add(0, 0.2, 0);
         } else {
             // fall down on top of solid blocks
-            Location down = location.clone().add(0, -0.1, 0);
-            if (!down.getBlock().getType().isSolid()) {
+            MutableVector down = location.addNew(0, -0.1, 0);
+            if (!world.getBlockType(down.toVector3i()).isSolidCube()) {
                 setRawLocation(down);
             }
         }
@@ -151,8 +159,8 @@ public final class GlowItem extends GlowEntity implements Item {
         int y = Position.getIntY(location);
         int z = Position.getIntZ(location);
 
-        int yaw = Position.getIntYaw(location);
-        int pitch = Position.getIntPitch(location);
+        int yaw = Position.getIntYaw(this.yaw);
+        int pitch = Position.getIntPitch(this.pitch);
 
         return Arrays.asList(
                 new SpawnObjectMessage(id, SpawnObjectMessage.ITEM, x, y, z, pitch, yaw),
@@ -166,24 +174,25 @@ public final class GlowItem extends GlowEntity implements Item {
     ////////////////////////////////////////////////////////////////////////////
     // Item stuff
 
-    @Override
     public int getPickupDelay() {
         return pickupDelay;
     }
 
-    @Override
     public void setPickupDelay(int delay) {
         pickupDelay = delay;
     }
 
-    @Override
     public ItemStack getItemStack() {
         return metadata.getItem(MetadataIndex.ITEM_ITEM);
     }
 
-    @Override
     public void setItemStack(ItemStack stack) {
         // stone is the "default state" for the item stack according to the client
-        metadata.set(MetadataIndex.ITEM_ITEM, stack == null ? new ItemStack(Material.STONE) : stack.clone());
+        metadata.set(MetadataIndex.ITEM_ITEM, stack == null ? GlowItemStackBuilder.build(ItemTypes.STONE) : GlowItemStackBuilder.copy(stack));
+    }
+
+    @Override
+    public RepresentedItemData getItemData() {
+        return null;
     }
 }

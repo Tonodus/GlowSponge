@@ -1,49 +1,28 @@
 package net.glowstone.entity;
 
 import com.flowpowered.networking.Message;
-import net.glowstone.EventFactory;
-import net.glowstone.constants.GlowPotionEffect;
+import net.glowstone.data.manipulator.entity.GlowHealthData;
 import net.glowstone.inventory.EquipmentMonitor;
-import net.glowstone.net.message.play.entity.EntityEffectMessage;
 import net.glowstone.net.message.play.entity.EntityEquipmentMessage;
-import net.glowstone.net.message.play.entity.EntityRemoveEffectMessage;
-import org.bukkit.EntityEffect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.block.Block;
-import org.bukkit.entity.*;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.BlockIterator;
-import org.bukkit.util.Vector;
+import org.spongepowered.api.data.DataQuery;
+import org.spongepowered.api.data.DataView;
+import org.spongepowered.api.data.manipulator.entity.DamageableData;
+import org.spongepowered.api.data.manipulator.entity.HealthData;
+import org.spongepowered.api.entity.living.Living;
+import org.spongepowered.api.potion.PotionEffect;
+import org.spongepowered.api.potion.PotionEffectType;
+import org.spongepowered.api.world.Location;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * A GlowLivingEntity is a {@link org.bukkit.entity.Player} or {@link org.bukkit.entity.Monster}.
- *
- * @author Graham Edgecombe.
- */
-public abstract class GlowLivingEntity extends GlowEntity implements LivingEntity {
+public abstract class GlowLivingEntity extends GlowEntity implements Living {
 
     /**
      * Potion effects on the entity.
      */
     private final Map<PotionEffectType, PotionEffect> potionEffects = new HashMap<>();
-
-    /**
-     * The entity's health.
-     */
-    protected double health;
-
-    /**
-     * The entity's maximum health.
-     */
-    protected double maxHealth;
 
     /**
      * The magnitude of the last damage the entity took.
@@ -53,12 +32,12 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
     /**
      * How long the entity has until it runs out of air.
      */
-    private int airTicks = 300;
+    // private int airTicks = 300;
 
     /**
      * The maximum amount of air the entity can hold.
      */
-    private int maximumAir = 300;
+    //  private int maximumAir = 300;
 
     /**
      * The number of ticks remaining in the invincibility period.
@@ -73,12 +52,12 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
     /**
      * A custom overhead name to be shown for non-Players.
      */
-    private String customName;
+    //   private String customName;
 
     /**
      * Whether the custom name is shown.
      */
-    private boolean customNameVisible;
+//    private boolean customNameVisible;
 
     /**
      * Whether the entity should be removed if it is too distant from players.
@@ -102,8 +81,13 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
      */
     public GlowLivingEntity(Location location) {
         super(location);
-        resetMaxHealth();
-        health = maxHealth;
+        offer(new GlowHealthData().setHealth(20).setMaxHealth(20));
+    }
+
+    @Override
+    protected void serialize(DataView data) {
+        data.set(DataQuery.of("HealthData"), getHealthData());
+        data.set(DataQuery.of("DamageableData"), getMortalData());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -112,7 +96,7 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
     @Override
     public void pulse() {
         super.pulse();
-
+/*
         // invulnerability
         if (noDamageTicks > 0) {
             --noDamageTicks;
@@ -156,7 +140,7 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
                 // remove
                 removePotionEffect(type);
             }
-        }
+        }*/
     }
 
     @Override
@@ -176,236 +160,11 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
         return messages;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Properties
-
-    @Override
-    public double getEyeHeight() {
-        return 0;
-    }
-
-    @Override
-    public double getEyeHeight(boolean ignoreSneaking) {
-        return getEyeHeight();
-    }
-
-    @Override
-    public Location getEyeLocation() {
-        return getLocation().add(0, getEyeHeight(), 0);
-    }
-
-    @Override
-    public Player getKiller() {
-        return null;
-    }
-
-    @Override
-    public boolean hasLineOfSight(Entity other) {
-        return false;
-    }
-
-    @Override
-    public EntityEquipment getEquipment() {
-        return null;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Properties
-
-    @Override
-    public int getNoDamageTicks() {
-        return noDamageTicks;
-    }
-
-    @Override
-    public void setNoDamageTicks(int ticks) {
-        noDamageTicks = ticks;
-    }
-
-    @Override
-    public int getMaximumNoDamageTicks() {
-        return maxNoDamageTicks;
-    }
-
-    @Override
-    public void setMaximumNoDamageTicks(int ticks) {
-        maxNoDamageTicks = ticks;
-    }
-
-    @Override
-    public int getRemainingAir() {
-        return airTicks;
-    }
-
-    @Override
-    public void setRemainingAir(int ticks) {
-        airTicks = Math.min(ticks, maximumAir);
-    }
-
-    @Override
-    public int getMaximumAir() {
-        return maximumAir;
-    }
-
-    @Override
-    public void setMaximumAir(int ticks) {
-        maximumAir = Math.max(0, ticks);
-    }
-
-    @Override
-    public boolean getRemoveWhenFarAway() {
-        return removeDistance;
-    }
-
-    @Override
-    public void setRemoveWhenFarAway(boolean remove) {
-        removeDistance = remove;
-    }
-
-    @Override
-    public boolean getCanPickupItems() {
-        return pickupItems;
-    }
-
-    @Override
-    public void setCanPickupItems(boolean pickup) {
-        pickupItems = pickup;
-    }
-
-    /**
-     * Get the hurt sound of this entity, or null for silence.
-     * @return the hurt sound if available
-     */
-    protected Sound getHurtSound() {
-        return null;
-    }
-
-    /**
-     * Get the death sound of this entity, or null for silence.
-     * @return the death sound if available
-     */
-    protected Sound getDeathSound() {
-        return null;
-    }
-
-    /**
-     * Get whether this entity should take damage from the specified source.
-     * Usually used to check environmental sources such as drowning.
-     * @param damageCause the damage source to check
-     * @return whether this entity can take damage from the source
-     */
-    public boolean canTakeDamage(EntityDamageEvent.DamageCause damageCause) {
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Line of Sight
-
-    private List<Block> getLineOfSight(HashSet<Byte> transparent, int maxDistance, int maxLength) {
-        // same limit as CraftBukkit
-        if (maxDistance > 120) {
-            maxDistance = 120;
-        }
-
-        LinkedList<Block> blocks = new LinkedList<>();
-        Iterator<Block> itr = new BlockIterator(this, maxDistance);
-        while (itr.hasNext()) {
-            Block block = itr.next();
-            blocks.add(block);
-            if (maxLength != 0 && blocks.size() > maxLength) {
-                blocks.removeFirst();
-            }
-            int id = block.getTypeId();
-            if (transparent == null) {
-                if (id != 0) {
-                    break;
-                }
-            } else {
-                if (!transparent.contains((byte) id)) {
-                    break;
-                }
-            }
-        }
-        return blocks;
-    }
-
-    @Override
-    public List<Block> getLineOfSight(HashSet<Byte> transparent, int maxDistance) {
-        return getLineOfSight(transparent, maxDistance, 0);
-    }
-
-    @Override
-    public Block getTargetBlock(HashSet<Byte> transparent, int maxDistance) {
-        return getLineOfSight(transparent, maxDistance, 1).get(0);
-    }
-
-    @Override
-    public List<Block> getLastTwoTargetBlocks(HashSet<Byte> transparent, int maxDistance) {
-        return getLineOfSight(transparent, maxDistance, 2);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Projectiles
-
-    @Override
-    public Egg throwEgg() {
-        return launchProjectile(Egg.class);
-    }
-
-    @Override
-    public Snowball throwSnowball() {
-        return launchProjectile(Snowball.class);
-    }
-
-    @Override
-    public Arrow shootArrow() {
-        return launchProjectile(Arrow.class);
-    }
-
-    @Override
-    public <T extends Projectile> T launchProjectile(Class<? extends T> projectile) {
-        return launchProjectile(projectile, getLocation().getDirection());  // todo: multiply by some speed
-    }
-
-    @Override
-    public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
-        T entity = world.spawn(getEyeLocation(), projectile);
-        entity.setVelocity(velocity);
-        return entity;
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Health
 
-    @Override
-    public double getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(double health) {
-        if (health < 0) health = 0;
-        if (health > maxHealth) health = maxHealth;
-        this.health = health;
-    }
-
-    @Override
-    public void damage(double amount) {
-        damage(amount, null, EntityDamageEvent.DamageCause.CUSTOM);
-    }
-
-    @Override
-    public void damage(double amount, Entity source) {
-        damage(amount, source, EntityDamageEvent.DamageCause.CUSTOM);
-    }
-
-    @Override
-    public void damage(double amount, EntityDamageEvent.DamageCause cause) {
-        damage(amount, null, cause);
-    }
-
-    @Override
-    public void damage(double amount, Entity source, EntityDamageEvent.DamageCause cause) {
+  /*  public void damage(double amount) {
         // invincibility timer
         if (noDamageTicks > 0 || health <= 0) {
             return;
@@ -459,183 +218,16 @@ public abstract class GlowLivingEntity extends GlowEntity implements LivingEntit
                 world.playSound(location, hurtSound, 1.0f, 1.0f);
             }
         }
+    }*/
+
+    @Override
+    public HealthData getHealthData() {
+        return getData(HealthData.class).get();
     }
 
     @Override
-    public double getMaxHealth() {
-        return maxHealth;
+    public DamageableData getMortalData() {
+        return getData(DamageableData.class).get();
     }
 
-    @Override
-    public void setMaxHealth(double health) {
-        maxHealth = health;
-    }
-
-    @Override
-    public void resetMaxHealth() {
-        maxHealth = 20;
-    }
-
-    @Override
-    public double getLastDamage() {
-        return lastDamage;
-    }
-
-    @Override
-    public void setLastDamage(double damage) {
-        lastDamage = damage;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Invalid health methods
-
-    @Override
-    public void _INVALID_damage(int amount) {
-        damage(amount);
-    }
-
-    @Override
-    public int _INVALID_getLastDamage() {
-        return (int) getLastDamage();
-    }
-
-    @Override
-    public void _INVALID_setLastDamage(int damage) {
-        setLastDamage(damage);
-    }
-
-    @Override
-    public void _INVALID_setMaxHealth(int health) {
-        setMaxHealth(health);
-    }
-
-    @Override
-    public int _INVALID_getMaxHealth() {
-        return (int) getMaxHealth();
-    }
-
-    @Override
-    public void _INVALID_damage(int amount, Entity source) {
-        damage(amount, source);
-    }
-
-    @Override
-    public int _INVALID_getHealth() {
-        return (int) getHealth();
-    }
-
-    @Override
-    public void _INVALID_setHealth(int health) {
-        setHealth(health);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Potion effects
-
-    @Override
-    public boolean addPotionEffect(PotionEffect effect) {
-        return addPotionEffect(effect, false);
-    }
-
-    @Override
-    public boolean addPotionEffect(PotionEffect effect, boolean force) {
-        if (potionEffects.containsKey(effect.getType())) {
-            if (force) {
-                removePotionEffect(effect.getType());
-            } else {
-                return false;
-            }
-        }
-
-        potionEffects.put(effect.getType(), effect);
-
-        EntityEffectMessage msg = new EntityEffectMessage(getEntityId(), effect.getType().getId(), effect.getAmplifier(), effect.getDuration(), effect.isAmbient());
-        for (GlowPlayer player : world.getRawPlayers()) {
-            if (player == this) {
-                // special handling for players having a different view of themselves
-                player.getSession().send(new EntityEffectMessage(0, effect.getType().getId(), effect.getAmplifier(), effect.getDuration(), effect.isAmbient()));
-            } else if (player.canSeeEntity(this)) {
-                player.getSession().send(msg);
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean addPotionEffects(Collection<PotionEffect> effects) {
-        boolean result = true;
-        for (PotionEffect effect : effects) {
-            if (!addPotionEffect(effect)) {
-                result = false;
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public boolean hasPotionEffect(PotionEffectType type) {
-        return potionEffects.containsKey(type);
-    }
-
-    @Override
-    public void removePotionEffect(PotionEffectType type) {
-        if (!hasPotionEffect(type)) return;
-        potionEffects.remove(type);
-
-        EntityRemoveEffectMessage msg = new EntityRemoveEffectMessage(getEntityId(), type.getId());
-        for (GlowPlayer player : world.getRawPlayers()) {
-            if (player == this) {
-                // special handling for players having a different view of themselves
-                player.getSession().send(new EntityRemoveEffectMessage(0, type.getId()));
-            } else if (player.canSeeEntity(this)) {
-                player.getSession().send(msg);
-            }
-        }
-    }
-
-    @Override
-    public Collection<PotionEffect> getActivePotionEffects() {
-        return Collections.unmodifiableCollection(potionEffects.values());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Custom name
-
-    @Override
-    public void setCustomName(String name) {
-        customName = name;
-    }
-
-    @Override
-    public String getCustomName() {
-        return customName;
-    }
-
-    @Override
-    public void setCustomNameVisible(boolean flag) {
-        customNameVisible = flag;
-    }
-
-    @Override
-    public boolean isCustomNameVisible() {
-        return customNameVisible;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Leashes
-
-    @Override
-    public boolean isLeashed() {
-        return false;
-    }
-
-    @Override
-    public Entity getLeashHolder() throws IllegalStateException {
-        return null;
-    }
-
-    @Override
-    public boolean setLeashHolder(Entity holder) {
-        return false;
-    }
 }

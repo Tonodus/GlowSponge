@@ -1,6 +1,6 @@
 package net.glowstone.entity.physics;
 
-import org.bukkit.util.Vector;
+import com.flowpowered.math.vector.Vector3d;
 
 /**
  * A BoundingBox which changes position over time as an entity moves.
@@ -15,8 +15,8 @@ public final class EntityBoundingBox extends BoundingBox {
     }
 
     @Override
-    public Vector getSize() {
-        return new Vector(hSize, vSize, hSize);
+    public Vector3d getSize() {
+        return new Vector3d(hSize, vSize, hSize);
     }
 
     public void setCenter(double x, double y, double z) {
