@@ -3,29 +3,44 @@ package net.glowstone;
 import com.google.common.base.Optional;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import net.glowstone.console.Console;
 import net.glowstone.entity.EntityIdManager;
-import net.glowstone.entity.GlowPlayer;
+import net.glowstone.entity.player.GlowPlayer;
 import net.glowstone.inventory.CraftingManager;
 import net.glowstone.io.PlayerDataService;
+import net.glowstone.io.anvil.AnvilWorldStorageProvider;
 import net.glowstone.net.GlowNetworkServer;
 import net.glowstone.net.SessionRegistry;
 import net.glowstone.net.query.QueryServer;
 import net.glowstone.net.rcon.RconServer;
-import net.glowstone.scheduler.GlowScheduler;
-import net.glowstone.scheduler.WorldScheduler;
-import net.glowstone.util.*;
+import net.glowstone.plugin.PluginLoader;
+import net.glowstone.plugin.PluginRegistrar;
+import net.glowstone.service.scheduler.GlowScheduler;
+import net.glowstone.service.scheduler.WorldScheduler;
+import net.glowstone.status.GlowFavicon;
+import net.glowstone.util.GlowHelpMap;
+import net.glowstone.util.SecurityUtils;
+import net.glowstone.util.ServerConfig;
+import net.glowstone.util.ShutdownMonitorThread;
 import net.glowstone.util.bans.GlowBanList;
 import net.glowstone.util.bans.UuidListFile;
+import net.glowstone.world.GlowWorld;
 import org.apache.commons.lang3.Validate;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.net.ChannelListener;
-import org.spongepowered.api.net.ChannelRegistrationException;
+import org.spongepowered.api.network.ChannelListener;
+import org.spongepowered.api.network.ChannelRegistrationException;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatTypes;
-import org.spongepowered.api.text.message.Message;
+import org.spongepowered.api.text.sink.MessageSink;
+import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.util.command.source.ConsoleSource;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.gen.WorldGenerator;
+import org.spongepowered.api.world.WorldCreationSettings;
+import org.spongepowered.api.world.storage.ChunkLayout;
+import org.spongepowered.api.world.storage.WorldProperties;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -37,7 +52,6 @@ import java.util.logging.Logger;
 
 /**
  * The core class of the Glowstone server.
- * @author Graham Edgecombe
  */
 public final class GlowServer implements Server {
 
@@ -64,7 +78,7 @@ public final class GlowServer implements Server {
     /**
      * The console manager of this server.
      */
-    private final ConsoleManager consoleManager = new ConsoleManager(this);
+    private final Console consoleManager = new Console(this);
 
     /**
      * The help map for the server.
@@ -74,7 +88,7 @@ public final class GlowServer implements Server {
     /**
      * The crafting manager for this server.
      */
-    private final CraftingManager craftingManager = new CraftingManager();
+    private final CraftingManager craftingManager;
 
     /**
      * The configuration for the server.
@@ -90,6 +104,11 @@ public final class GlowServer implements Server {
      * The list of players whitelisted on the server.
      */
     private final UuidListFile whitelist;
+
+    /**
+     * The game
+     */
+    private final GlowGame game;
 
     /**
      * The BanList for player names.
@@ -109,12 +128,12 @@ public final class GlowServer implements Server {
     /**
      * The world this server is managing.
      */
-    private final WorldScheduler worlds = new WorldScheduler();
+    private final WorldScheduler worlds;
 
     /**
      * The task scheduler used by this server.
      */
-    private final GlowScheduler scheduler = new GlowScheduler(this, worlds);
+    private final GlowScheduler scheduler;
 
     /**
      * Whether the server is shutting down
@@ -159,7 +178,7 @@ public final class GlowServer implements Server {
     /**
      * The default icon, usually blank, used for the server list.
      */
-    private GlowServerIcon defaultIcon;
+    private GlowFavicon defaultIcon;
 
     /**
      * The server port.
@@ -176,14 +195,16 @@ public final class GlowServer implements Server {
      */
     private final Set<GlowPlayer> onlineView = Collections.unmodifiableSet(onlinePlayers);
 
-    private final GlowGame game;
-    private Message motd;
+    private final MessageSink broadcastSink;
 
     /**
      * Creates a new server.
      */
     public GlowServer(GlowGame game, ServerConfig config) {
         this.game = game;
+        this.scheduler = game.getScheduler();
+        this.worlds = scheduler.getWorldScheduler();
+        this.craftingManager = new CraftingManager(game.getRegistry().getRecipeRegistry());
         this.config = config;
         // stuff based on selected config directory
         opsList = new UuidListFile(config.getFile("ops.json"));
@@ -192,6 +213,13 @@ public final class GlowServer implements Server {
         //ipBans = new GlowBanList(this, BanList.Type.IP);
 
         loadConfig();
+
+        this.broadcastSink = new MessageSink() {
+            @Override
+            public Iterable<CommandSource> getRecipients() {
+                return (Collection) getOnlinePlayers();
+            }
+        };
     }
 
     /**
@@ -220,6 +248,11 @@ public final class GlowServer implements Server {
 
         // Start loading plugins
         //TODO
+        PluginLoader loader = new PluginLoader(new File(config.getString(ServerConfig.Key.PLUGIN_FOLDER)));
+        List<Class<?>> plugins = loader.load();
+        PluginRegistrar registrar = new PluginRegistrar(game);
+        registrar.register(plugins);
+        //game.getEventManager().post();
 
         // Create worlds
         //TODO
@@ -325,11 +358,11 @@ public final class GlowServer implements Server {
         craftingManager.initialize();
 
         // server icon
-        defaultIcon = new GlowServerIcon();
+        defaultIcon = new GlowFavicon(null);
         try {
             File file = config.getFile("server-icon.png");
             if (file.isFile()) {
-                defaultIcon = new GlowServerIcon(file);
+                defaultIcon = new GlowFavicon(ImageIO.read(file));
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to load server-icon.png", e);
@@ -425,7 +458,7 @@ public final class GlowServer implements Server {
      * @return The server's player data service.
      */
     public PlayerDataService getPlayerDataService() {
-        return worlds.getWorlds().get(0).getStorage().getPlayerDataService();
+        return worlds.getWorlds().get(0).getStorageProvider().getPlayerDataService();
     }
 
     /**
@@ -498,6 +531,14 @@ public final class GlowServer implements Server {
         }
     }
 
+    public int getViewDistance() {
+        return 3; //TODO
+    }
+
+    public GlowGame getGame() {
+        return game;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Static server properties
 
@@ -532,6 +573,7 @@ public final class GlowServer implements Server {
 
     @Override
     public Optional<Player> getPlayer(String name) {
+        //TODO: best match or exact?
         name = name.toLowerCase();
         Player bestPlayer = null;
         int bestDelta = -1;
@@ -563,6 +605,31 @@ public final class GlowServer implements Server {
 
     @Override
     public Optional<World> loadWorld(String worldName) {
+        if (worlds.getWorld(worldName) != null) {
+            return Optional.of((World) worlds.getWorld(worldName));
+        }
+
+        GlowWorld world = new GlowWorld(this, null, new AnvilWorldStorageProvider(new File(config.getString(ServerConfig.Key.WORLD_FOLDER))));
+        return Optional.of((World) world);
+    }
+
+    @Override
+    public Optional<World> loadWorld(UUID uniqueId) {
+        return null;
+    }
+
+    @Override
+    public Optional<World> loadWorld(WorldProperties properties) {
+        return loadWorld(properties.getUniqueId());
+    }
+
+    @Override
+    public Optional<WorldProperties> getWorldProperties(String worldName) {
+        return null;
+    }
+
+    @Override
+    public Optional<WorldProperties> getWorldProperties(UUID uniqueId) {
         return null;
     }
 
@@ -578,17 +645,17 @@ public final class GlowServer implements Server {
     }
 
     @Override
-    public World createWorld(String worldName, WorldGenerator generator, long seed) {
+    public Optional<WorldProperties> createWorld(WorldCreationSettings settings) {
         return null;
     }
 
     @Override
-    public World createWorld(String worldName, WorldGenerator generator) {
-        return null;
+    public boolean saveWorldProperties(WorldProperties properties) {
+        return false;
     }
 
     @Override
-    public World createWorld(String worldName) {
+    public ChunkLayout getChunkLayout() {
         return null;
     }
 
@@ -598,7 +665,11 @@ public final class GlowServer implements Server {
     }
 
     @Override
-    public void broadcastMessage(Message message) {
+    public MessageSink getBroadcastSink() {
+        return broadcastSink;
+    }
+
+    public void broadcastMessage(Text message) {
         for (Player player : onlineView)
             player.sendMessage(ChatTypes.CHAT, message);
     }
@@ -611,7 +682,7 @@ public final class GlowServer implements Server {
     @Override
     public Optional<World> getWorld(UUID uid) {
         for (GlowWorld world : worlds.getWorlds()) {
-            if (uid.equals(world.getUID())) {
+            if (uid.equals(world.getUniqueId())) {
                 return (Optional) Optional.of(world);
             }
         }
@@ -625,11 +696,22 @@ public final class GlowServer implements Server {
         return (List) worlds.getWorlds();
     }
 
+    @Override
+    public Collection<WorldProperties> getUnloadedWorlds() {
+        return null;
+    }
+
+    @Override
+    public Collection<WorldProperties> getAllWorldProperties() {
+        return null;
+    }
+
     /**
+     * INTERNAL USE ONLY
      * Add a world to the internal world collection.
      * @param world The world to add.
      */
-    void addWorld(GlowWorld world) {
+    public void addWorld(GlowWorld world) {
         worlds.addWorld(world);
     }
 
@@ -655,10 +737,14 @@ public final class GlowServer implements Server {
         return config.getInt(ServerConfig.Key.MAX_PLAYERS);
     }
 
+    @Override
+    public Text getMotd() {
+        return null;
+    }
 
     @Override
-    public Message getMotd() {
-        return motd;
+    public ConsoleSource getConsole() {
+        return consoleManager.getConsoleSource();
     }
 
     public void shutdown() {
@@ -666,8 +752,8 @@ public final class GlowServer implements Server {
     }
 
     @Override
-    public void shutdown(Message kickMessage) {
-// Just in case this gets called twice
+    public void shutdown(Text kickMessage) {
+        // Just in case this gets called twice
         if (isShuttingDown) {
             return;
         }
@@ -679,7 +765,7 @@ public final class GlowServer implements Server {
 
         // Kick all players (this saves their data too)
         for (GlowPlayer player : onlineView) {
-            player.kickPlayer(kickMessage);
+            player.kick(kickMessage);
         }
 
         // Stop the network servers - starts the shutdown process
@@ -715,4 +801,5 @@ public final class GlowServer implements Server {
     public List<String> getRegisteredChannels() {
         return null;
     }
+
 }

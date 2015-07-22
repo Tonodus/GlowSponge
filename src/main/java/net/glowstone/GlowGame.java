@@ -1,45 +1,51 @@
 package net.glowstone;
 
-import com.google.common.base.Optional;
 import net.glowstone.plugin.GlowPluginManager;
 import net.glowstone.service.GlowServiceManager;
 import net.glowstone.service.command.GlowCommandService;
 import net.glowstone.service.event.GlowEventManager;
-import net.glowstone.service.scheduler.GlowAsynchronousScheduler;
-import net.glowstone.service.scheduler.GlowSynchronousScheduler;
+import net.glowstone.service.profile.GlowGameProfileResolver;
+import net.glowstone.service.scheduler.GlowScheduler;
+import net.glowstone.service.scheduler.WorldScheduler;
 import net.glowstone.util.ServerConfig;
-import org.spongepowered.api.*;
-import org.spongepowered.api.plugin.PluginManager;
-import org.spongepowered.api.service.ServiceManager;
+import org.spongepowered.api.Game;
+import org.spongepowered.api.Platform;
+import org.spongepowered.api.service.ProviderExistsException;
 import org.spongepowered.api.service.command.CommandService;
-import org.spongepowered.api.service.event.EventManager;
-import org.spongepowered.api.service.scheduler.AsynchronousScheduler;
-import org.spongepowered.api.service.scheduler.SynchronousScheduler;
+import org.spongepowered.api.service.profile.GameProfileResolver;
+import org.spongepowered.api.service.scheduler.SchedulerService;
 
 import java.net.BindException;
 
 public class GlowGame implements Game {
-    private final String apiVersion = "1.1-SNAPSHOT", implVersion = "0.1-SNAPSHOT";
-    private final MinecraftVersion mcVersion = new GlowMinecraftVersion(1, 8);
-
     private final GlowServer server;
     private final GlowPluginManager pluginManager;
     private final GlowEventManager eventManager;
     private final GlowGameRegistry gameRegistry;
     private final GlowServiceManager serviceManager;
-    private final GlowSynchronousScheduler syncScheduler;
-    private final GlowAsynchronousScheduler asyncScheduler;
+    private final GlowScheduler scheduler;
     private final GlowCommandService commandService;
+    private final GlowTeleportHelper teleportHelper;
+    private final Platform platform;
 
     public GlowGame() {
         this.server = new GlowServer(this, new ServerConfig(null, null, null));
         this.pluginManager = new GlowPluginManager(this);
         this.eventManager = new GlowEventManager(this);
         this.gameRegistry = new GlowGameRegistry(this);
-        this.serviceManager = new GlowServiceManager(this);
-        this.syncScheduler = new GlowSynchronousScheduler();
-        this.asyncScheduler = new GlowAsynchronousScheduler();
+        this.serviceManager = new GlowServiceManager();
+        this.scheduler = new GlowScheduler(server, new WorldScheduler());
         this.commandService = new GlowCommandService();
+        this.teleportHelper = new GlowTeleportHelper();
+        this.platform = new GlowPlatform();
+
+        try {
+            serviceManager.setProvider(null, SchedulerService.class, scheduler);
+            serviceManager.setProvider(null, CommandService.class, commandService);
+            serviceManager.setProvider(null, GameProfileResolver.class, new GlowGameProfileResolver());
+        } catch (ProviderExistsException e) {
+            e.printStackTrace();
+        }
     }
 
     public void startGame() {
@@ -53,61 +59,46 @@ public class GlowGame implements Game {
 
     @Override
     public Platform getPlatform() {
-        return Platform.SERVER;
+        return platform;
     }
 
     @Override
-    public Optional<Server> getServer() {
-        return (Optional) Optional.of(server);
+    public GlowServer getServer() {
+        return server;
     }
 
     @Override
-    public PluginManager getPluginManager() {
+    public GlowPluginManager getPluginManager() {
         return pluginManager;
     }
 
     @Override
-    public EventManager getEventManager() {
+    public GlowEventManager getEventManager() {
         return eventManager;
     }
 
     @Override
-    public GameRegistry getRegistry() {
+    public GlowGameRegistry getRegistry() {
         return gameRegistry;
     }
 
     @Override
-    public ServiceManager getServiceManager() {
+    public GlowServiceManager getServiceManager() {
         return serviceManager;
     }
 
     @Override
-    public SynchronousScheduler getSyncScheduler() {
-        return syncScheduler;
+    public GlowScheduler getScheduler() {
+        return scheduler;
     }
 
     @Override
-    public AsynchronousScheduler getAsyncScheduler() {
-        return asyncScheduler;
-    }
-
-    @Override
-    public CommandService getCommandDispatcher() {
+    public GlowCommandService getCommandDispatcher() {
         return commandService;
     }
 
     @Override
-    public String getAPIVersion() {
-        return apiVersion;
-    }
-
-    @Override
-    public String getImplementationVersion() {
-        return implVersion;
-    }
-
-    @Override
-    public MinecraftVersion getMinecraftVersion() {
-        return mcVersion;
+    public GlowTeleportHelper getTeleportHelper() {
+        return teleportHelper;
     }
 }
