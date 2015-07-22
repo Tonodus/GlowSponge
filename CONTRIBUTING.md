@@ -1,10 +1,10 @@
-Contributing to Glowstone
+Contributing to GlowSponge
 =========================
-[Glowstone](http://glowstone.net) is a lightweight, open source Minecraft server written in Java. For those who wish to contribute, we encourage you to fork the repository and submit pull requests. Below you will find guidelines that will explain this process in further detail.
+GlowSponge is a lightweight, open source Minecraft server written in Java. For those who wish to contribute, we encourage you to fork the repository and submit pull requests. Below you will find guidelines that will explain this process in further detail.
 
 Quick Guide
 -----------
-1. Create or find an issue on the [issue tracker](https://github.com/GlowstoneMC/Glowstone/issues).
+1. Create or find an issue on the [issue tracker](https://github.com/Tonodus/GlowSponge/issues).
 2. Fork Glowstone if you haven't done so already.
 3. Create a branch dedicated to your change.
 4. Write code addressing your feature or bug.
@@ -17,7 +17,6 @@ Getting Started
 * Search the issue tracker for your bug report or feature.
 * Large changes should always have a separate issue to allow discussion.
   * If your feature or bug incorporates a large change, file a new issue, so the feature and its implementation may be tracked separately. This way, the nature of the issue may be discussed before time is spent addressing the issue.
-* Create a card on [Trello](https://trello.com/b/O4lBmv1l/glowstone) if desired.
 * Fork the repository on GitHub.
 
 Making Changes
@@ -26,7 +25,7 @@ Making Changes
   * This is usually the master branch.
   * Name your branch something relevant to the change you are going to make.
   * To quickly create a topic branch based on master, use `git checkout master` followed by `git checkout -b <name>`. Avoid working directly on the `master` branch.
-* Make your best effort to meet our [code style guidelines](https://github.com/GlowstoneMC/Glowstone/wiki/Code-Style).
+* Make your best effort to meet our [code style guidelines](https://github.com/Tonodus/GlowSponge/wiki/Code-Style).
 * Changes should generally be future-proof and not strongly tied to details that may change in a future Minecraft version.
 * Large changes should be documented by the appropriate javadocs if applicable.
 
@@ -61,7 +60,6 @@ How to get your pull request accepted
 
 Additional Resources
 --------------------
-* [Bug tracker](https://github.com/GlowstoneMC/Glowstone/issues)
+* [Bug tracker](https://github.com/Tonodus/GlowSponge/issues)
 * [General GitHub documentation](http://help.github.com/)
 * [GitHub pull request documentation](http://help.github.com/send-pull-requests/)
-* IRC: #glowstone (general) and #glowstonedev (development) on EsperNet

@@ -1,5 +1,15 @@
-Glowstone
-==========
+#GlowSponge
+
+
+GlowSponge is an **INOFFICAL** fork of the [Glowstone](http://glowstone.net) project. While Glowstone is a performant, 100% open source (no mojang code) Bukkit implementation, GlowSponge is a [Sponge](http://spongepowered.org) implementation.
+
+##Contributing
+Feel free to submit some PRs or issues to the project.
+
+---------------
+
+
+##Glowstone
 
 Introduction
 ------------
